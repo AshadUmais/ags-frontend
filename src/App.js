@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import LoginPage from "./Components/LoginPage";
-import AdminLoginPage from "./Components/AdminLoginPage";
-import AdminDashboard from "./Components/AdminDashboard";
-import UserDashboard from "./Components/UserDashboard";
-import AgentDashboard from "./Components/AgentDashboard";
+import LoginPage from "./components/common/LoginPage";
+import AdminLoginPage from "./components/admin/AdminLoginPage";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import UserDashboard from "./components/user/UserDashboard";
+import AgentDashboard from "./components/agent/AgentDashboard";
 
 function App() {
   const handleLoginSuccess = (data) => {
@@ -27,12 +27,9 @@ function App() {
   // Protected Route component
   const ProtectedRoute = ({ children, allowedRoles }) => {
     const role = localStorage.getItem("authRole");
-    const token = localStorage.getItem("authToken");
-
-    if (!token || !allowedRoles.includes(role)) {
+    if (!allowedRoles.includes(role)) {
       return <Navigate to="/" replace />;
     }
-
     return children;
   };
 

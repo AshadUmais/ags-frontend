@@ -1,156 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-// API Configuration
-const BASE_URL = () => {
-  // For local development on your computer
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8080/api';
-  }
-
-  // For testing on mobile devices on the same network
-  // Replace with your computer's actual IP address when testing on mobile
-  // Example: return 'http://192.168.1.100:8080/api';
-  return `http://${window.location.hostname}:8080/api`;
-};
-
-
-const getAuthToken = () => {
-  return localStorage.getItem('jwt_token') || localStorage.getItem('authToken');
-};
-
-const handleResponse = async (response) => {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-  }
-  return response.json();
-};
-
-// API Functions
-const getTicketCount = async (date) => {
-  const token = getAuthToken();
-  console.log('Fetching ticket count for date:', date);
-  console.log('Using token:', token ? 'Token exists' : 'No token found');
-  console.log(token);
-  try {
-    const response = await fetch(`${BASE_URL()}/tickets/count?date=${date}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('Response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error(`Failed to fetch ticket count: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Ticket count data:', data);
-
-    return {
-      adult: Number(data.adult_tickets) || 0,
-      child: Number(data.child_tickets) || 0,
-    };
-  } catch (error) {
-    console.error('Error in getTicketCount:', error);
-    throw error;
-  }
-};
-
-const createTickets = async (ticketsRequest, bookingDate) => {
-  const token = getAuthToken();
-  const requestBody = {
-    tickets: ticketsRequest,
-    booking_date: bookingDate,
-  };
-  const response = await fetch(`${BASE_URL()}/tickets`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  });
-  return handleResponse(response);
-};
-
-const getMyTickets = async () => {
-  const token = getAuthToken();
-  const response = await fetch(`${BASE_URL()}/tickets`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return handleResponse(response);
-};
-
-const createOrder = async (orderData) => {
-  const token = getAuthToken();
-  const response = await fetch(`${BASE_URL()}/orders`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(orderData),
-  });
-  return handleResponse(response);
-};
-
-const processPayment = async (orderId, paymentData) => {
-  const token = getAuthToken();
-  const response = await fetch(`${BASE_URL()}/payments/${orderId}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(paymentData),
-  });
-  return handleResponse(response);
-};
-
-const getTicketPrice = async (date) => {
-  const token = getAuthToken();
-  console.log('Fetching ticket price for date:', date);
-  console.log('Using token:', token ? 'Token exists' : 'No token found');
-
-  try {
-    const response = await fetch(`${BASE_URL()}/tickets/price?date=${date}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('Response status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      throw new Error(`Failed to fetch ticket price: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Ticket price data:', data);
-
-    // Map the fetched data into your desired structure
-
-    return data;
-
-  } catch (error) {
-    console.error('Error in getTicketPrice:', error);
-    throw error;
-  }
-};
+import { getTicketCount, createTickets, getTicketPricing, getMyTickets, createOrder } from '../../api';
 
 // Helper Functions
 const formatDate = (dateStr) => {
@@ -177,8 +26,6 @@ const getMaxDate = () => {
   today.setMonth(today.getMonth() + 3);
   return today.toISOString().split('T')[0];
 };
-
-
 
 const MAX_TICKETS_PER_BOOKING = 20;
 
@@ -225,8 +72,8 @@ export default function UserDashboard() {
         const availability = await getTicketCount(formattedDate);
 
         setTicketAvailability({
-          adult: availability.adult || 0,
-          child: availability.child || 0
+          adult: availability.adult_tickets || 0,
+          child: availability.child_tickets || 0
         });
 
         setTickets(prev => ({
@@ -234,7 +81,7 @@ export default function UserDashboard() {
           child: Math.min(prev.child, availability.child || 0)
         }));
 
-        const priceData = await getTicketPrice(formattedDate);
+        const priceData = await getTicketPricing(formattedDate);
         console.log('Fetched price data:', priceData);
 
         setTicketPrices({
@@ -360,16 +207,6 @@ export default function UserDashboard() {
         currency: 'INR'
       };
       const orderResponse = await createOrder(orderData);
-
-      const paymentData = {
-        order_id: orderResponse.order_id,
-        amount: calculateTotal(),
-        currency: 'INR',
-        card_number: '4111111111111111',
-        cvv: '123',
-        expiry_date: '12/25'
-      };
-      await processPayment(orderResponse.order_id, paymentData);
 
       const updatedTickets = await getMyTickets();
       setUserTickets(updatedTickets.tickets || []);
