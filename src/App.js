@@ -1,10 +1,11 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./components/common/LoginPage";
 import AdminLoginPage from "./components/admin/AdminLoginPage";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import UserDashboard from "./components/user/UserDashboard";
 import AgentDashboard from "./components/agent/AgentDashboard";
+import PublicApp from "./components/public/PublicApp";
 
 function App() {
   const handleLoginSuccess = (data) => {
@@ -36,8 +37,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
+        {/* Public Routes for AGS WonderWorld */}
+        <Route path="/public/*" element={<PublicApp />} />
+        
+        {/* Authentication Routes */}
+        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/admin/login" element={<AdminLoginPage onLoginSuccess={handleLoginSuccess} />} />
         
         {/* Protected Routes */}
@@ -66,8 +70,11 @@ function App() {
           } 
         />
 
-        {/* Fallback route - redirects to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Default route redirects to public home */}
+        <Route path="/" element={<Navigate to="/public" replace />} />
+        
+        {/* Fallback route - redirects to public home */}
+        <Route path="*" element={<Navigate to="/public" replace />} />
       </Routes>
     </Router>
   );
