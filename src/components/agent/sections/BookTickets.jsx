@@ -77,11 +77,11 @@ const BookTickets = () => {
       setError('');
       const ymd = bookingDate.replace(/-/g, '');
       console.log("Sending payload:", {
-  adult_count: tickets.adult,
-  child_count: tickets.child,
-  ticket_date_int: Number(ymd),
-});
-const ticketsRequest = {
+        adult_count: tickets.adult,
+        child_count: tickets.child,
+        ticket_date_int: Number(ymd),
+      });
+      const ticketsRequest = {
         Adult: tickets.adult,
         Child: tickets.child
       };
@@ -89,7 +89,6 @@ const ticketsRequest = {
       // After tickets created, open payment card and load wallet
       try {
         const w = await getMyWallet();
-        console.log("Received wallet response:", w);  
         setWallet({ balance: Number(w.wallet.balance) || 0 });
       } catch (_) {
         setWallet({ balance: 0 });
@@ -97,6 +96,49 @@ const ticketsRequest = {
       setShowPaymentCard(true);
     } catch (err) {
       setError(err.message || 'Failed to create tickets.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    // Validate wallet balance if wallet payment is selected
+    if (paymentMethod === 'wallet' && wallet.balance < calculateTotal()) {
+      setError('Insufficient wallet balance');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      // TODO: Add your payment API call here
+      // Example:
+      // const paymentData = {
+      //   amount: calculateTotal(),
+      //   payment_method: paymentMethod,
+      //   customer_mobile: customerMobile,
+      //   ticket_date: bookingDate.replace(/-/g, ''),
+      //   adult_count: tickets.adult,
+      //   child_count: tickets.child
+      // };
+      // await processPayment(paymentData);
+      
+      console.log('Processing payment:', {
+        amount: calculateTotal(),
+        method: paymentMethod,
+        mobile: customerMobile,
+        tickets: tickets
+      });
+
+      // On success, close modal and reset form
+      alert('Payment successful!');
+      setShowPaymentCard(false);
+      setCustomerMobile('');
+      setTickets({ adult: 0, child: 0 });
+      
+    } catch (err) {
+      setError(err.message || 'Payment failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -171,22 +213,91 @@ const ticketsRequest = {
       </div>
 
       {showPaymentCard && (
-        <div className="bg-white p-4 rounded-xl shadow border">
-          <h3 className="text-lg font-semibold mb-3">Payment</h3>
-          <div className="mb-3 text-sm text-gray-600">Tickets: Adult {tickets.adult}, Child {tickets.child} on {bookingDate}</div>
-          <div className="mb-4">
-            <label className="flex items-center gap-2 mb-2">
-              <input type="radio" name="pm" value="wallet" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} />
-              <span>Wallet (Balance: ₹{wallet.balance})</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="pm" value="gateway" checked={paymentMethod === 'gateway'} onChange={() => setPaymentMethod('gateway')} />
-              <span>Payment Gateway</span>
-            </label>
-          </div>
-          <div className="flex gap-2">
-            <button type="button" className="px-4 py-2 bg-primary text-white rounded-lg">Pay Now</button>
-            <button type="button" className="px-4 py-2 border rounded-lg" onClick={() => setShowPaymentCard(false)}>Close</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-2xl font-bold mb-4 text-primary">Payment Details</h3>
+              
+              {/* Ticket Summary */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <h4 className="font-semibold mb-2 text-primary">Booking Summary</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Customer Mobile:</span>
+                    <span className="font-medium">{customerMobile}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Date:</span>
+                    <span className="font-medium">{format(new Date(bookingDate), 'dd MMM yyyy')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Adult Tickets:</span>
+                    <span className="font-medium">{tickets.adult} × ₹{prices.adult?.price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-secondary">Child Tickets:</span>
+                    <span className="font-medium">{tickets.child} × ₹{prices.child?.price}</span>
+                  </div>
+                  <div className="border-t mt-2 pt-2 flex justify-between">
+                    <span className="font-semibold">Total Amount:</span>
+                    <span className="font-bold text-lg text-primary">₹{calculateTotal()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Method Selection */}
+              <div className="mb-4">
+                <h4 className="font-semibold mb-3 text-primary">Select Payment Method</h4>
+                <label className="flex items-center gap-3 mb-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                  <input 
+                    type="radio" 
+                    name="pm" 
+                    value="wallet" 
+                    checked={paymentMethod === 'wallet'} 
+                    onChange={() => setPaymentMethod('wallet')}
+                    className="w-4 h-4" 
+                  />
+                  <div className="flex-1">
+                    <span className="font-medium">Wallet</span>
+                    <div className="text-sm text-secondary">Balance: ₹{wallet.balance}</div>
+                    {paymentMethod === 'wallet' && wallet.balance < calculateTotal() && (
+                      <div className="text-xs text-red-600 mt-1">Insufficient balance</div>
+                    )}
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition">
+                  <input 
+                    type="radio" 
+                    name="pm" 
+                    value="gateway" 
+                    checked={paymentMethod === 'gateway'} 
+                    onChange={() => setPaymentMethod('gateway')}
+                    className="w-4 h-4"
+                  />
+                  <span className="font-medium">Payment Gateway</span>
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button 
+                  type="button" 
+                  className="flex-1 px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  disabled={isLoading || (paymentMethod === 'wallet' && wallet.balance < calculateTotal())}
+                  onClick={handlePayment}
+                >
+                  {isLoading ? 'Processing...' : 'Pay Now'}
+                </button>
+                <button 
+                  type="button" 
+                  className="px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition" 
+                  onClick={() => setShowPaymentCard(false)}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
