@@ -277,6 +277,36 @@ export default function UserDashboard() {
         return 'bg-gray-100 text-gray-700';
     }
   };
+  const getUserBackground = () => {
+    const authRole = localStorage.getItem("authRole");
+    const baseSize = '400% 400%';
+    switch (authRole) {
+      case "GoldUser":
+        return {
+          background: 'linear-gradient(45deg, #ffd700, #ffed4e, #fff2a8, #ffd700, #ffb347)',
+          backgroundSize: baseSize,
+          animation: 'sheenEffect 4s ease-in-out infinite'
+        };
+      case "SilverUser":
+        return {
+          background: 'linear-gradient(45deg, #c0c0c0, #e8e8e8, #f5f5f5, #d3d3d3, #c0c0c0)',
+          backgroundSize: baseSize,
+          //animation: 'sheenEffect 4s ease-in-out infinite'
+        };
+      case "PlatinumUser":
+        return {
+          background: 'linear-gradient(45deg, #e8e8e8, #c0c0c0, #a8a8a8, #d3d3d3, #b8b8b8)',
+          backgroundSize: baseSize,
+          animation: 'sheenEffect 5s ease-in-out infinite'
+        };
+      default:
+        return {
+          background: 'linear-gradient(45deg, #8d6aacff, #d09dfdff, #e8e8f8, #c8a8ff)',
+          backgroundSize: baseSize,
+          animation: 'sheenEffect 5s ease-in-out infinite'
+        };
+    }
+  };
 
   const minDate = getTodayDate();
   const maxDate = getMaxDate();
@@ -284,7 +314,12 @@ export default function UserDashboard() {
   return (
     <>
       <Header />
-      <div className="min-h-screen p-3 sm:p-4" style={{ paddingTop: '7rem', paddingBottom: '0px', paddingInline: '0px', backgroundColor: 'linear-gradient(135deg, #f8f9fa, #b25affff)' }}>
+      <div className="min-h-screen p-3 sm:p-4 shine-effect shine-effect-slow" style={{ 
+        paddingTop: '7rem', 
+        paddingBottom: '0px', 
+        paddingInline: '0px', 
+        ...getUserBackground() 
+      }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
             <div>
@@ -459,9 +494,6 @@ export default function UserDashboard() {
                       <div className="mt-4">
                         {Number(ticketAvailability.adult) + Number(ticketAvailability.child) > 0 ? (
                           <div className="p-4 bg-accent rounded-lg border border-accent">
-                            <p className="text-sm font-medium text-primary mb-2">
-                              {formatDate(bookingDate)}
-                            </p>
                             <p className="text-xs text-secondary mt-1">
                               Tickets Available
                             </p>
@@ -623,8 +655,8 @@ export default function UserDashboard() {
 
                       try {
                         // Hide buttons and show logo
-                        if (downloadBtn) downloadBtn.style.display = 'none';
-                        if (closeBtn) closeBtn.style.display = 'none';
+                        if (downloadBtn) downloadBtn.style.visibility = 'hidden';
+                        if (closeBtn) closeBtn.style.visibility = 'hidden';
                         if (logo) logo.style.display = 'block';
 
                         // Wait for UI to update
@@ -650,15 +682,15 @@ export default function UserDashboard() {
                           }
 
                           // Show buttons and hide logo again
-                          if (downloadBtn) downloadBtn.style.display = 'block';
-                          if (closeBtn) closeBtn.style.display = 'block';
+                          if (downloadBtn) downloadBtn.style.visibility = 'visible';
+                          if (closeBtn) closeBtn.style.visibility = 'visible';
                           if (logo) logo.style.display = 'none';
                         });
                       } catch (error) {
                         console.error('Error downloading ticket:', error);
                         // Always restore UI on error
-                        if (downloadBtn) downloadBtn.style.display = 'block';
-                        if (closeBtn) closeBtn.style.display = 'block';
+                        if (downloadBtn) downloadBtn.style.visibility = 'visible';
+                        if (closeBtn) closeBtn.style.visibility = 'visible';
                         if (logo) logo.style.display = 'none';
                         alert('Failed to download ticket. Please try again.');
                       }
@@ -764,7 +796,7 @@ export default function UserDashboard() {
                             const childCount = tickets.filter(t => t.title === "Child").length;
                             return (
                               <span className="font-medium text-sm">
-                                {adultCount}A, {childCount}C
+                                {adultCount} Adult, {childCount} Child
                               </span>
                             );
                           })()}
@@ -876,6 +908,59 @@ export default function UserDashboard() {
           }
           .animate-scale-in {
             animation: scale-in 0.5s ease-out;
+          }
+          
+          @keyframes sheenEffect {
+            0% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+            100% {
+              background-position: 0% 50%;
+            }
+          }
+          
+          @keyframes shineEffect {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+          
+          .shine-effect {
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .shine-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+              45deg,
+              transparent 30%,
+              rgba(255, 255, 255, 0.5) 50%,
+              transparent 70%
+            );
+            transform: translateX(-100%);
+            animation: shineEffect 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+          }
+          
+          .shine-effect-fast::before {
+            animation: shineEffect 2s ease-in-out infinite;
+          }
+          
+          .shine-effect-slow::before {
+            animation: shineEffect 4s ease-in-out infinite;
           }
         `}</style>
       </div>
