@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import DashboardHome from './sections/DashboardHome';
 import UserManagement from './sections/UserManagement';
 import AgentManagement from './sections/AgentManagement';
-import BookingManagement from './sections/BookingManagement';
 import OrderManagement from './sections/OrderManagement';
 import TicketCountManagement from './sections/TicketCountManagement';
 import TicketPricingManagement from './sections/TicketPricingManagement';
@@ -52,7 +51,6 @@ export default function AdminDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'users', label: 'User Management', icon: '👥' },
     { id: 'agents', label: 'Agent Management', icon: '🤝' },
-    { id: 'ticket', label: 'Ticket Management', icon: '📅' },
     { id: 'orders', label: 'Order Management', icon: '🧾' },
     { id: 'ticketCount', label: 'Ticket Count', icon: '🎟️' },
     { id: 'pricing', label: 'Ticket Pricing', icon: '🏷️' },
@@ -67,8 +65,6 @@ export default function AdminDashboard() {
         return <UserManagement />;
       case 'agents':
         return <AgentManagement />;
-      case 'ticket':
-        return <BookingManagement />;
       case 'orders':
         return <OrderManagement />;
       case 'ticketCount':
@@ -160,7 +156,7 @@ export default function AdminDashboard() {
                             {menuItems.find((item) => item.id === activeSection)?.label}
                         </h1>
                     </div>
-                    <button onClick={handleLogout} className="px-4 py-2 bg-brand-primary text-white font-bold rounded-lg shadow-md hover:bg-brand-secondary transition" aria-label="Logout">Logout</button>
+                    <button onClick={handleLogout} className="px-4 py-2 bg-accent text-primary rounded-xl shadow hover:brightness-95" aria-label="Logout">Logout</button>
                 </div>
             </header>
             <main className="flex-1 overflow-y-auto p-4 sm:p-6">{renderContent(activeSection)}</main>
