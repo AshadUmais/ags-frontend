@@ -604,11 +604,11 @@ export default function UserDashboard() {
         )}
 
         {isOrderModalOpen && selectedOrder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 pt-20">
-            <div className="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden relative">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-md w-full h-fit max-h-[90vh] overflow-hidden relative flex flex-col">
 
               {/* Sticky Header with Close and Download buttons */}
-              <div className="sticky top-0 bg-white z-10 flex justify-between items-center p-6 border-b">
+              <div className="flex justify-between items-center p-6 border-b flex-shrink-0">
                 <h2 className="text-xl font-semibold text-primary">Booking Details</h2>
                 <div className="flex gap-2">
                   <button
@@ -686,68 +686,66 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              {/* Scrollable Content */}
-              <div className="overflow-y-auto max-h-[calc(85vh-80px)]">
-                <div id="ticket-content" className="p-6">
+              {/* Content - No scrolling, auto-fit */}
+              <div className="flex-1 p-6 overflow-hidden">
+                <div id="ticket-content" className="space-y-4">
 
                   {/* Logo - Hidden in modal, shown in download */}
-                  <div id="ticket-logo" className="hidden mb-6 text-center">
+                  <div id="ticket-logo" className="hidden mb-4 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <img
                         src="/assets/ags-logo.avif"
                         alt="AGS Logo"
-                        className="h-18 w-auto"
+                        className="h-12 w-auto"
                         crossOrigin="anonymous"
                       />
                       <img
                         src="/assets/ags-text.avif"
                         alt="AGS WonderWorld"
-                        className="h-16 w-auto"
+                        className="h-10 w-auto"
                         crossOrigin="anonymous"
                       />
                     </div>
                   </div>
 
                   {loadingOrderDetails ? (
-                    <div className="text-center py-8">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-2"></div>
-                      <p className="text-secondary">Loading booking details...</p>
+                    <div className="text-center py-6">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-accent mb-2"></div>
+                      <p className="text-secondary text-sm">Loading...</p>
                     </div>
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {selectedOrder.qr_code && (
-                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-xl border border-purple-200">
-                          <div className="flex justify-center mb-3">
-                            <img
-                              src={`${selectedOrder.qr_code}`}
-                              alt="Order QR Code"
-                              className="w-48 h-48 bg-white p-2 rounded-lg shadow"
-                              crossOrigin="anonymous"
-                            />
-                          </div>
-                          <p className="text-xs text-center text-secondary">
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200 text-center">
+                          <img
+                            src={`${selectedOrder.qr_code}`}
+                            alt="Order QR Code"
+                            className="w-32 h-32 mx-auto bg-white p-2 rounded-lg shadow"
+                            crossOrigin="anonymous"
+                          />
+                          <p className="text-xs text-secondary mt-2">
                             Show this QR code at the venue
                           </p>
                         </div>
                       )}
 
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <h3 className="font-semibold text-primary mb-3">Booking Info</h3>
-                        <div className="space-y-2">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <h3 className="font-semibold text-primary mb-2 text-sm">Booking Info</h3>
+                        <div className="space-y-1 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-secondary text-sm">Booking ID</span>
+                            <span className="text-secondary">ID</span>
                             <span className="font-medium">#{selectedOrder.order.ID}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-secondary text-sm">Date</span>
+                            <span className="text-secondary">Date</span>
                             <span className="font-medium">
                               {selectedOrder.order.tickets?.[0]?.booking_date
                                 ? formatDateFromInt(selectedOrder.order.tickets[0].booking_date)
                                 : 'N/A'}
                             </span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-secondary text-sm">Status</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-secondary">Status</span>
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(selectedOrder.order.order_status)}`}>
                               {selectedOrder.order.order_status &&
                                 selectedOrder.order.order_status.charAt(0).toUpperCase() +
@@ -757,25 +755,26 @@ export default function UserDashboard() {
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
-                        <h3 className="font-semibold text-primary">Tickets</h3>
-                        {(() => {
-                          const tickets = selectedOrder.order?.tickets || [];
-                          const adultCount = tickets.filter(t => t.title === "Adult").length;
-                          const childCount = tickets.filter(t => t.title === "Child").length;
-
-                          return (
-                            <span className="font-semibold text-primary">
-                              {adultCount} Adult{adultCount !== 1 ? 's' : ''}, {childCount} Child{childCount !== 1 ? 'ren' : ''}
-                            </span>
-                          );
-                        })()}
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-semibold text-primary text-sm">Tickets</h3>
+                          {(() => {
+                            const tickets = selectedOrder.order?.tickets || [];
+                            const adultCount = tickets.filter(t => t.title === "Adult").length;
+                            const childCount = tickets.filter(t => t.title === "Child").length;
+                            return (
+                              <span className="font-medium text-sm">
+                                {adultCount}A, {childCount}C
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </div>
 
-                      <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-4">
+                      <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-3">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-primary">Total Amount Paid</span>
-                          <span className="text-2xl font-bold text-primary">₹{selectedOrder.order.total_amount}</span>
+                          <span className="font-semibold text-primary text-sm">Total Paid</span>
+                          <span className="text-xl font-bold text-primary">₹{selectedOrder.order.total_amount}</span>
                         </div>
                       </div>
                     </div>
