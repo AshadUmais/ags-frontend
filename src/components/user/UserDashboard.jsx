@@ -45,12 +45,17 @@ export default function UserDashboard() {
     adult: { price: 0 },
     child: { price: 0 }
   });
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
+
   useEffect(() => {
     const fetchUserTickets = async () => {
       try {
         setLoadingTickets(true);
-        const response = await getMyTickets();
-        setUserTickets(response.tickets || []);
+        const response = await getMyOrders();
+        // Store the full order data instead of just tickets
+        setUserTickets(response || []);
       } catch (err) {
         console.error('Failed to fetch tickets:', err);
       } finally {
@@ -211,7 +216,7 @@ export default function UserDashboard() {
       // eslint-disable-next-line no-unused-vars
 
       const updatedTickets = await getMyTickets();
-      setUserTickets(updatedTickets.tickets || []);
+      setUserTickets(updatedTickets || []);
 
       setTickets({ adult: 0, child: 0 });
       setBookingDate('');
@@ -224,6 +229,46 @@ export default function UserDashboard() {
       setError(err.message || 'Failed to process booking. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOrderClick = async (order) => {
+    setSelectedOrder(order);
+    setIsOrderModalOpen(true);
+    setLoadingOrderDetails(true);
+
+    try {
+      // Fetch detailed order information with QR code
+      const response = await fetch(`http://localhost:8080/api/orders/${order.ID}`, {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      const orderDetails = await response.json();
+      setSelectedOrder(orderDetails);
+    } catch (err) {
+      console.error('Failed to fetch order details:', err);
+      // Keep showing basic order info even if detailed fetch fails
+    } finally {
+      setLoadingOrderDetails(false);
+    }
+  };
+
+  const getOrderTicketCounts = (tickets) => {
+    const adultCount = tickets.filter(t => t.title === 'Adult').length;
+    const childCount = tickets.filter(t => t.title === 'Child').length;
+    return { adultCount, childCount };
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'confirmed':
+        return 'bg-green-100 text-green-700';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'cancelled':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -259,17 +304,17 @@ export default function UserDashboard() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-center text-primary">My Tickets</h2>
-          <p className="text-sm text-center text-secondary mb-6">Your booked tickets</p>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-center text-primary">My Orders</h2>
+          <p className="text-sm text-center text-secondary mb-6">Your ticket orders</p>
 
           {loadingTickets ? (
             <div className="text-center py-8 text-secondary">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-2"></div>
-              <p>Loading your tickets...</p>
+              <p>Loading your orders...</p>
             </div>
           ) : userTickets.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-secondary mb-4">You don't have any tickets yet</p>
+              <p className="text-secondary mb-4">You don't have any orders yet</p>
               <button
                 onClick={() => {
                   setIsBookingModalOpen(true);
@@ -284,24 +329,55 @@ export default function UserDashboard() {
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              {userTickets.map((ticket) => (
-                <div key={ticket.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-medium text-primary">
-                        {ticket.type === 'adult' || ticket.type === 'Adult' ? 'Adult Ticket' : 'Child Ticket'}
-                      </h3>
-                      <p className="text-sm text-secondary">
-                        {ticket.booking_date ? formatDateFromInt(ticket.booking_date) : formatDate(ticket.date)}
-                      </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {userTickets.map((order) => {
+                const { adultCount, childCount } = getOrderTicketCounts(order.tickets || []);
+                const bookingDate = order.tickets?.[0]?.booking_date;
+
+                return (
+                  <div
+                    key={order.ID}
+                    onClick={() => handleOrderClick(order)}
+                    className="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold text-primary text-lg">Order #{order.ID}</h3>
+                        <p className="text-sm text-secondary">
+                          {bookingDate ? formatDateFromInt(bookingDate) : 'Date N/A'}
+                        </p>
+                      </div>
+                      <div className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(order.order_status)}`}>
+                        {order.order_status || 'N/A'}
+                      </div>
                     </div>
-                    <div className="text-sm px-3 py-1 rounded-full bg-green-100 text-green-700">
-                      Valid
+
+                    <div className="space-y-2 mb-3">
+                      {adultCount > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-secondary">Adult Tickets</span>
+                          <span className="font-medium text-primary">{adultCount}</span>
+                        </div>
+                      )}
+                      {childCount > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-secondary">Child Tickets</span>
+                          <span className="font-medium text-primary">{childCount}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-purple-200 flex justify-between items-center">
+                      <span className="text-sm font-medium text-secondary">Total Amount</span>
+                      <span className="text-lg font-bold text-primary">₹{order.total_amount}</span>
+                    </div>
+
+                    <div className="mt-3 text-xs text-purple-600 text-center">
+                      Click to view details & QR code →
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -514,8 +590,8 @@ export default function UserDashboard() {
                   }}
                   disabled={!canProceedToNextStep()}
                   className={`px-6 py-2 rounded-lg ml-auto transition ${canProceedToNextStep()
-                      ? 'bg-accent text-primary hover:brightness-95'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    ? 'bg-accent text-primary hover:brightness-95'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                 >
                   {bookingStep === 3 ? 'Confirm Booking' : 'Next'}

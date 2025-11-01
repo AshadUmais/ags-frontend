@@ -105,6 +105,14 @@ export const getUsers = async () => {
   return handleResponse(response);
 };
 
+export const getMembers = async () => {
+  const response = await fetch(`${API_BASE_URL}/agent/users`, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include'
+  });
+  return handleResponse(response);
+};
+
 export const createUser = async (payload) => {
   const response = await fetch(`${API_BASE_URL}/admin/users`, {
     method: 'POST',
@@ -127,10 +135,19 @@ export const updateUser = async (userId, payload) => {
   return handleResponse(response);
 };
 
+export const upgradeMember = async (userId, payload) => {
+  const response = await fetch(`${API_BASE_URL}/agent/users/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(response);
+};
+
 export const deleteUser = async (userId) => {
   const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
     method: 'DELETE',
-    headers: getAuthHeaders(),
     credentials: 'include',
   });
   return handleResponse(response);
@@ -141,7 +158,6 @@ export const setTicketCount = async (dates, counts) => {
   const promises = dates.map(date => {
     return fetch(`${API_BASE_URL}/admin/tickets/count`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       credentials: 'include',
       body: JSON.stringify({
         date: date,
