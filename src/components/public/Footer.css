@@ -1,5 +1,5 @@
 .footer {
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  background: linear-gradient(135deg,#7662b49d, #7662B4);
   color: white;
   padding: 60px 0 20px;
 }
@@ -26,7 +26,7 @@
   font-size: 1.3rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  color: #ff6b35;
+  color: #FBDE5E;
   letter-spacing: 1px;
 }
 
@@ -40,10 +40,14 @@
   font-size: 1rem;
 }
 
-.contact-details {
+.zcontact-details {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  background-color: #8571BC;
+  padding: 1.5rem;
+  border-radius: 10px;
+  color: white;
 }
 
 .contact-link {
@@ -54,7 +58,7 @@
 }
 
 .contact-link:hover {
-  color: #ff6b35;
+  color: #FBDE5E;
 }
 
 .social-section {

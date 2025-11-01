@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Hero.css';
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const totalSlides = 2;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -17,12 +19,34 @@ const Hero = () => {
     setCurrentSlide(slideIndex);
   };
 
+  const handleBookTickets = () => {
+    const authToken = localStorage.getItem("authToken");
+    const authRole = localStorage.getItem("authRole");
+    
+    if (authToken && authRole) {
+      // User is logged in, redirect to appropriate dashboard
+      if (authRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (authRole === "User" || authRole === "SilverUser" || authRole === "GoldUser" || authRole === "PlatinumUser") {
+        navigate("/bookings");
+      } else if (authRole === "agent") {
+        navigate("/agent/dashboard");
+      } else {
+        // Dispatch event to open login modal
+        window.dispatchEvent(new Event('openLoginModal'));
+      }
+    } else {
+      // User is not logged in, dispatch event to open login modal
+      window.dispatchEvent(new Event('openLoginModal'));
+    }
+  };
+
   return (
     <section className="hero" id="home">
       <div className="hero-slider">
         <div className={`hero-slide ${currentSlide === 0 ? 'active' : ''}`}>
           <div className="hero-image">
-            <img src="https://images.unsplash.com/photo-1586671267731-da2cf3ceeb80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2020&q=80" alt="Welcome to AGS Wonderworld" />
+            <img src="/assets/hero.jpg" alt="Welcome to AGS Wonderworld" />
           </div>
           <div className="hero-content">
             <h1 className="hero-title">WELCOME TO AGS WONDERWORLD</h1>
@@ -32,7 +56,7 @@ const Hero = () => {
               multi-cuisine restaurant. Book your tickets now and get ready for an unforgettable
               adventure!
             </p>
-            <button className="hero-cta-btn">BOOK TICKETS</button>
+            <button className="hero-cta-btn" onClick={handleBookTickets}>BOOK TICKETS</button>
           </div>
         </div>
         

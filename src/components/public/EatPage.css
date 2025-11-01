@@ -92,7 +92,7 @@
 
 .info-card h3 {
   font-size: 1.3rem;
-  color: #ff6b35;
+  color: #8571BC;
   margin-bottom: 1rem;
   font-weight: 700;
 }
@@ -308,7 +308,7 @@
 /* Call to Action */
 .eat-cta {
   padding: 100px 0;
-  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  background: linear-gradient(135deg, #7662B4,#7662b49d);
   color: white;
   text-align: center;
 }
@@ -347,7 +347,7 @@
 
 .cta-btn.primary {
   background: white;
-  color: #ff6b35;
+  color: #8571BC;
 }
 
 .cta-btn.primary:hover {
@@ -363,7 +363,7 @@
 
 .cta-btn.secondary:hover {
   background: white;
-  color: #ff6b35;
+  color: #8571BC;
   transform: translateY(-2px);
 }
 

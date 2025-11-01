@@ -20,7 +20,7 @@ const mapRoleIdToRoleName = (roleId) => {
   return roleMap[roleId] || "user";
 };
 
-export default function LoginPage({ onLoginSuccess }) {
+export default function LoginPage({ onLoginSuccess, isModal = false }) {
   const [role, setRole] = useState(ROLE.USER);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -204,8 +204,8 @@ export default function LoginPage({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-lightPurple p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6">
+    <div className={isModal ? "" : "min-h-screen flex items-center justify-center bg-lightPurple p-4"}>
+      <div className={`max-w-md w-full ${isModal ? "" : "bg-white rounded-2xl shadow-lg p-6"}`}>
         <div className="flex justify-center mb-6">
           <img
             src="https://static.wixstatic.com/media/602df3_7d6aee23192c4640ac4839d4c2a38fe6~mv2.png/v1/fill/w_338,h_95,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ags%20TEXT.png"

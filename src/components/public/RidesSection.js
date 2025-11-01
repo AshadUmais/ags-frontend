@@ -23,7 +23,7 @@ const RidesSection = () => {
       id: 3,
       title: "LAND RIDES",
       description: "Experience the thrill of AGS Wonderworld's land rides, where adventure and excitement await at turn for visitors of all ages.",
-      image: "https://images.unsplash.com/photo-1594736797933-d0301ba2fe65?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      image: "/assets/roller-coaster.jpg",
       buttonText: "VIEW LAND RIDES",
       link: "#land-rides"
     },

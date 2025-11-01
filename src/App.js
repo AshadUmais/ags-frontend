@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./components/common/LoginPage";
 import AdminLoginPage from "./components/admin/AdminLoginPage";
@@ -6,8 +6,23 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import UserDashboard from "./components/user/UserDashboard";
 import AgentDashboard from "./components/agent/AgentDashboard";
 import PublicApp from "./components/public/PublicApp";
+import LoginModal from "./components/common/LoginModal";
 
 function App() {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setShowLoginModal(true);
+    };
+
+    window.addEventListener('openLoginModal', handleOpenLoginModal);
+
+    return () => {
+      window.removeEventListener('openLoginModal', handleOpenLoginModal);
+    };
+  }, []);
+
   const handleLoginSuccess = (data) => {
     console.log("Logged in:", data);
     
@@ -15,11 +30,17 @@ function App() {
     localStorage.setItem("authToken", data.token || "");
     localStorage.setItem("authRole", data.role || "");
 
+    // Close the modal
+    setShowLoginModal(false);
+
+    // Dispatch custom event to notify header component
+    window.dispatchEvent(new Event('authChange'));
+
     // Redirect based on role
     if (data.role === "admin") {
       window.location.href = "/admin/dashboard";
     } else if (data.role === "User" || data.role === "SilverUser" || data.role === "GoldUser" || data.role === "PlatinumUser") {
-      window.location.href = "/user/dashboard";
+      window.location.href = "/bookings";
     } else if (data.role === "agent") {
       window.location.href = "/agent/dashboard";
     }
@@ -37,9 +58,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes for AGS WonderWorld */}
-        <Route path="/public/*" element={<PublicApp />} />
-        
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/admin/login" element={<AdminLoginPage onLoginSuccess={handleLoginSuccess} />} />
@@ -54,7 +72,7 @@ function App() {
           } 
         />
         <Route 
-          path="/user/dashboard" 
+          path="/bookings" 
           element={
             <ProtectedRoute allowedRoles={["User", "SilverUser", "GoldUser", "PlatinumUser"]}>
               <UserDashboard />
@@ -70,12 +88,16 @@ function App() {
           } 
         />
 
-        {/* Default route redirects to public home */}
-        <Route path="/" element={<Navigate to="/public" replace />} />
-        
-        {/* Fallback route - redirects to public home */}
-        <Route path="*" element={<Navigate to="/public" replace />} />
+        {/* Public Routes for AGS WonderWorld - Must be last to catch remaining routes */}
+        <Route path="/*" element={<PublicApp />} />
       </Routes>
+
+      {/* Login Modal - Rendered at body level */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </Router>
   );
 }

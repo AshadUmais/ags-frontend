@@ -14,7 +14,8 @@ const Footer = () => {
               <p>Tirupattur District - 635 853</p>
             </div>
             
-            <div className="contact-details">
+            <div className="zcontact-details">
+              <p>For inquiries, please contact:</p>
               <a href="mailto:info@agswonderworld.com" className="contact-link">
                 info@agswonderworld.com
               </a>
@@ -41,9 +42,9 @@ const Footer = () => {
         </div>
         
         <div className="footer-links">
-          <a href="#contact" className="footer-link">Contact Us</a>
-          <a href="#privacy" className="footer-link">Privacy Policy</a>
-          <a href="#cancellation" className="footer-link">Cancellation and Refund Policy</a>
+          <a href="/contact" className="footer-link">Contact Us</a>
+          <a href="/privacy" className="footer-link">Privacy Policy</a>
+          <a href="/cancellation" className="footer-link">Cancellation and Refund Policy</a>
         </div>
         
         <div className="footer-bottom">

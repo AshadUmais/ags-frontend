@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getTicketCount, createTickets, getTicketPricing, getMyTickets, createOrder } from '../../api';
+import Header from '../public/Header';
 
 // Helper Functions
 const formatDate = (dateStr) => {
@@ -207,6 +208,7 @@ export default function UserDashboard() {
         currency: 'INR'
       };
       const orderResponse = await createOrder(orderData);
+      // eslint-disable-next-line no-unused-vars
 
       const updatedTickets = await getMyTickets();
       setUserTickets(updatedTickets.tickets || []);
@@ -229,8 +231,10 @@ export default function UserDashboard() {
   const maxDate = getMaxDate();
 
   return (
-    <div className="min-h-screen bg-lightPurple p-3 sm:p-4">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <Header />
+      <div className="min-h-screen p-3 sm:p-4" style={{paddingTop: '7rem',paddingBottom:'0px',paddingInline:'0px',backgroundColor:'linear-gradient(135deg, #f8f9fa, #b25affff)'}}>
+        <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-4">
           <div className="flex justify-between items-center">
             <div>
@@ -249,15 +253,6 @@ export default function UserDashboard() {
                 className="px-4 py-2 bg-accent text-primary rounded-xl shadow hover:brightness-95"
               >
                 Book Tickets
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.href = '/';
-                }}
-                className="px-3 py-1.5 text-sm bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-              >
-                Logout
               </button>
             </div>
           </div>
@@ -535,6 +530,7 @@ export default function UserDashboard() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
