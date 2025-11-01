@@ -52,7 +52,7 @@ export const getMyTickets = async () => {
 
 // Order related APIs
 export const createOrder = async (orderData) => {
-  const response = await fetch(`${API_BASE_URL}/orders`, {
+  const response = await fetch(`${API_BASE_URL}/tickets`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -75,6 +75,38 @@ export const getOrderById = async (orderId) => {
     credentials: 'include',
   });
   return handleResponse(response);
+};
+export const updateOrderStatus = async (orderId, status) => {
+  const response = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ status })
+  });
+
+  // Handle non-OK responses
+  if (!response.ok) {
+    let errorMsg = 'Failed to update order status';
+    try {
+      const error = await response.json();
+      errorMsg = error.message || errorMsg;
+    } catch {
+      // No JSON in error response
+    }
+    throw new Error(errorMsg);
+  }
+  // Handle 204 No Content (no body)
+  if (response.status === 204) {
+    return { success: true };
+  }
+  // Otherwise, parse and return JSON body
+  try {
+    return await response.json();
+  } catch {
+    return { success: true }; // fallback for non-JSON but successful responses
+  }
 };
 
 // Payment related APIs
@@ -116,7 +148,7 @@ export const getMembers = async () => {
 export const createUser = async (payload) => {
   const response = await fetch(`${API_BASE_URL}/admin/users`, {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
   });
@@ -148,6 +180,7 @@ export const upgradeMember = async (userId, payload) => {
 export const deleteUser = async (userId) => {
   const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
     method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   });
   return handleResponse(response);
@@ -158,6 +191,7 @@ export const setTicketCount = async (dates, counts) => {
   const promises = dates.map(date => {
     return fetch(`${API_BASE_URL}/admin/tickets/count`, {
       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         date: date,
@@ -206,6 +240,25 @@ export const getAllOrders = async () => {
         credentials: 'include',
     });
     return handleResponse(response);
+};
+
+export const getOrderDetails = async (orderId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch order details: ${response.status}`);
+    }
+
+    const orderDetails = await response.json();
+    return orderDetails;
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    throw error;
+  }
 };
 
 export const getAgents = async () => {
@@ -265,8 +318,8 @@ export const loadWallet = async (userId, amount) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // Add your auth headers if needed
     },
+    credentials: 'include',
     body: JSON.stringify({
       userId: userId,
       amount: amount

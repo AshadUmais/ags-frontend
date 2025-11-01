@@ -160,7 +160,7 @@ const Header = () => {
         <div className="header-actions">
           {sessionStorage.getItem("isAuthenticated") ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Welcome, {authRole}</span>
+              <span className="text-sm text-gray-600">Welcome, {authRole?.replace("User", " Member")}</span>
               <button className="login-btn" onClick={handleLogout}>LOGOUT</button>
             </div>
           ) : (
