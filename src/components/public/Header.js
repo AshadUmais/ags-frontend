@@ -70,7 +70,7 @@ const Header = () => {
       // User is logged in, redirect to appropriate dashboard
       if (authRole === "admin") {
         navigate("/admin/dashboard");
-      } else if (authRole === "3" || authRole === "SilverUser" || authRole === "GoldUser" || authRole === "PlatinumUser") {
+      } else if (authRole === "User" || authRole === "SilverUser" || authRole === "GoldUser" || authRole === "PlatinumUser") {
         navigate("/bookings");
       } else if (authRole === "agent") {
         navigate("/agent/dashboard");

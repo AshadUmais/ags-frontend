@@ -7,23 +7,20 @@ export const handleResponse = async (response) => {
     try {
       const err = await response.json();
       errorMsg = err.message || errorMsg;
-    } catch {
-      // No JSON in error response
-    }
+    } catch {}
     throw new Error(errorMsg);
   }
 
-  // Handle 204 or empty body safely
-  if (response.status === 204) {
-    return { success: true };
-  }
+  if (response.status === 204) return [];
 
-  // Try parsing JSON, or fallback to success
   try {
     const data = await response.json();
-    return data && Object.keys(data).length ? data : { success: true };
+    // 🧩 If data is not an object with keys and not an array, return []
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && Object.keys(data).length) return data;
+    return [];
   } catch {
-    return { success: true };
+    return [];
   }
 };
 
@@ -68,12 +65,13 @@ export const createAgentTickets = async (ticketData, date, username) => {
   };
   console.log('Final request body:', JSON.stringify(requestBody, null, 2));
   console.log(requestBody)
-  const response = await fetch(`${API_BASE_URL}/tickets`, {
+  const response = await fetch(`${API_BASE_URL}/agent/tickets`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(requestBody),
   });
+  console.log(response);
   return handleResponse(response);
 };
 
@@ -193,12 +191,13 @@ export const createUser = async (payload) => {
 export const updateUser = async (userId, payload) => {
   console.log(userId);
   console.log(payload);
-  const response = await fetch(`${API_BASE_URL}/admin/users/?id=${userId}`, {
-    method: 'POST',
+  const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
   });
+
   return handleResponse(response);
 };
 

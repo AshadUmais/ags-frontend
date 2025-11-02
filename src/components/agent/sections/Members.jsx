@@ -48,9 +48,6 @@ const Members = () => {
     const roleId = parseInt(selectedNewRole);
     const payload = { role: roleId };
 
-    console.log(payload);
-    console.log(`Upgrading member with ID ${selectedUser.id}`);
-
     const res = await upgradeMember(selectedUser.id, payload);
 
     setMessage({ text: "✅ Member subscription upgraded successfully!", type: "success" });

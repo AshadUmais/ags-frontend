@@ -101,7 +101,7 @@ const TicketCountManagement = () => {
       setStartDate('');
       setEndDate('');
       setTicketCounts({ adult_count: '', child_count: '' });
-      
+
     } catch (error) {
       setMessage({
         text: `An error occurred: ${error.message}`,
@@ -114,7 +114,6 @@ const TicketCountManagement = () => {
 
   return (
     <div className="p-3 sm:p-6">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">Ticket Count Management</h2>
 
       {message.text && (
         <div className={`mb-4 p-3 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -124,36 +123,40 @@ const TicketCountManagement = () => {
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
-          <h3 className="text-lg font-medium">Set Available Ticket Counts</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 className="text-lg font-medium">Set Available Ticket Counts</h3>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-800 mb-2">
+                Select Date Mode
+              </label>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    value="single"
+                    checked={dateMode === 'single'}
+                    onChange={(e) => handleDateModeChange(e.target.value)}
+                    className="w-4 h-4 text-primary focus:ring-primary focus:ring-2"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">📅 Single Day</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    value="multiple"
+                    checked={dateMode === 'multiple'}
+                    onChange={(e) => handleDateModeChange(e.target.value)}
+                    className="w-4 h-4 text-primary focus:ring-primary focus:ring-2"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">📆 Multiple Days</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="p-4 sm:p-6 space-y-6">
-          {/* Date Mode Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Select Date Mode</label>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="single"
-                  checked={dateMode === 'single'}
-                  onChange={(e) => handleDateModeChange(e.target.value)}
-                  className="w-4 h-4 text-primary focus:ring-primary focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">📅 Single Day</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  value="multiple"
-                  checked={dateMode === 'multiple'}
-                  onChange={(e) => handleDateModeChange(e.target.value)}
-                  className="w-4 h-4 text-primary focus:ring-primary focus:ring-2"
-                />
-                <span className="ml-2 text-sm text-gray-700">📆 Multiple Days</span>
-              </label>
-            </div>
-          </div>
 
           {/* Date Selection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -24,7 +24,7 @@ const BookTickets = () => {
   const [showPaymentCard, setShowPaymentCard] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('wallet');
   const [wallet, setWallet] = useState({ balance: 0 });
-  const [orderId, setOrderId] = useState(null);
+  const [orderId, setOrderId] = useState();
 
   const formatDate = (date, formatStr = 'yyyy-MM-dd') => {
     const d = new Date(date);
@@ -114,8 +114,8 @@ const BookTickets = () => {
       };
       const response = await createAgentTickets(ticketsRequest, Number(ymd), customerMobile);
       
-      if (response && response.order_id) {
-        setOrderId(response.order_id);
+      if (response && response.ID) {
+        setOrderId(response.ID);
       }
       
       try {
@@ -133,11 +133,6 @@ const BookTickets = () => {
   };
 
   const handlePayment = async () => {
-    console.log('handlePayment called');
-    console.log('Payment method:', paymentMethod);
-    console.log('Wallet balance:', wallet.balance);
-    console.log('Total:', calculateTotal());
-    console.log('Order ID:', orderId);
     
     if (paymentMethod === 'wallet' && wallet.balance < calculateTotal()) {
       setError('Insufficient wallet balance');
@@ -158,10 +153,7 @@ const BookTickets = () => {
           order_id: orderId,
           pg_type: 1
         };
-        console.log('Calling payByWallet with:', paymentData);
         const response = await payByWallet(paymentData);
-        console.log('Payment response:', response);
-        
         // On success, close modal and reset form
         setShowPaymentCard(false);
         setCustomerMobile('');
@@ -173,10 +165,7 @@ const BookTickets = () => {
         const paymentData = {
           order_id: orderId,
           pg_type: 2
-        };
-        console.log('Processing payment gateway:', paymentData);
-        alert('Payment gateway integration pending!');
-        
+        };        
         // Close modal
         setShowPaymentCard(false);
         setCustomerMobile('');
@@ -185,7 +174,6 @@ const BookTickets = () => {
       }
       
     } catch (err) {
-      console.error('Payment error:', err);
       setError(err.message || 'Payment failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -408,7 +396,6 @@ const BookTickets = () => {
                   disabled={isLoading || (paymentMethod === 'wallet' && wallet.balance < calculateTotal())}
                   onClick={(e) => {
                     e.preventDefault();
-                    console.log('Pay Now button clicked');
                     handlePayment();
                   }}
                 >

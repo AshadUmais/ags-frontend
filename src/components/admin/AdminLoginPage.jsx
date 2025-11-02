@@ -63,17 +63,16 @@ export default function AdminLoginPage({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-lightPurple p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-6">
+    <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="max-w-md w-full bg-bg-white rounded-2xl shadow-lg p-6">
         <div className="flex justify-center mb-6">
           <img
-            src="https://static.wixstatic.com/media/602df3_7d6aee23192c4640ac4839d4c2a38fe6~mv2.png/v1/fill/w_338,h_95,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ags%20TEXT.png"
-            alt="AGS ParkParadise Logo"
+            src="/assets/ags-text.avif"
+            alt="AGS WonderWorld"
             className="h-16"
           />
         </div>
-        <h2 className="text-2xl font-semibold mb-2 text-center text-primary">Admin Login</h2>
-        <p className="text-sm text-center text-secondary mb-6">Enter your admin credentials</p>
+        <h2 className="text-2xl font-semibold mb-2 text-center text-primary">Admin Sign in</h2>
 
         {error && (
           <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg mb-4">

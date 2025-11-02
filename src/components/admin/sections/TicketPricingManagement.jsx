@@ -87,6 +87,19 @@ const TicketPricingManagement = () => {
       });
       setStartDate('');
       setEndDate('');
+      setDateMode('single');
+      setPrices({
+        adult_price_role_agent: '',
+        child_price_role_agent: '',
+        adult_price_role_user: '',
+        child_price_role_user: '',
+        adult_price_role_silver_user: '',
+        child_price_role_silver_user: '',
+        adult_price_role_gold_user: '',
+        child_price_role_gold_user: '',
+        adult_price_role_platinum_user: '',
+        child_price_role_platinum_user: ''
+      });
 
     } catch (error) {
       setMessage({
@@ -98,37 +111,40 @@ const TicketPricingManagement = () => {
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b">
-        <h3 className="text-lg font-medium">Set Ticket Pricing by Members</h3>
+      <div className="p-2 border-b">
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <h3 className="text-lg font-medium">Set Ticket Pricing by Members</h3>
+    <div className="bg-gray-50 p-3 rounded">
+      <label className="block text-xs font-semibold text-gray-800 mb-2">
+        Select Date Mode
+      </label>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <label className="flex items-center cursor-pointer">
+          <input
+            type="radio"
+            value="single"
+            checked={dateMode === 'single'}
+            onChange={(e) => handleDateModeChange(e.target.value)}
+            className="w-4 h-4 text-accent focus:ring-accent focus:ring-2"
+          />
+          <span className="ml-2 text-sm text-gray-700">📅 Single Day</span>
+        </label>
+        <label className="flex items-center cursor-pointer">
+          <input
+            type="radio"
+            value="multiple"
+            checked={dateMode === 'multiple'}
+            onChange={(e) => handleDateModeChange(e.target.value)}
+            className="w-4 h-4 text-accent focus:ring-accent focus:ring-2"
+          />
+          <span className="ml-2 text-sm text-gray-700">📆 Multiple Days</span>
+        </label>
       </div>
+    </div>
+  </div>
+</div>
 
       <div className="p-4 sm:p-6 space-y-4">
-        <div className="bg-gray-50 p-3 rounded">
-          <label className="block text-xs font-semibold text-gray-800 mb-2">Select Date Mode</label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                value="single"
-                checked={dateMode === 'single'}
-                onChange={(e) => handleDateModeChange(e.target.value)}
-                className="w-4 h-4 text-accent focus:ring-accent focus:ring-2"
-              />
-              <span className="ml-2 text-sm text-gray-700">📅 Single Day</span>
-            </label>
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="radio"
-                value="multiple"
-                checked={dateMode === 'multiple'}
-                onChange={(e) => handleDateModeChange(e.target.value)}
-                className="w-4 h-4 text-accent focus:ring-accent focus:ring-2"
-              />
-              <span className="ml-2 text-sm text-gray-700">📆 Multiple Days</span>
-            </label>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -158,7 +174,7 @@ const TicketPricingManagement = () => {
         </div>
 
         <div>
-          <h4 className="text-xs font-semibold text-gray-800 mb-3">Pricing by Members</h4>
+          <h4 className="text-medium font-semibold text-gray-800 mb-3">Pricing by Members</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {roles.map(role => (
               <div key={role.key} className={`border rounded-lg p-3 ${role.bgColor} hover:shadow-md transition-shadow`}>
