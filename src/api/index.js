@@ -1,12 +1,30 @@
 const API_BASE_URL = 'http://localhost:8080/api';  // Using relative URL to work with proxy
 
 // Helper function to handle responses
-const handleResponse = async (response) => {
+export const handleResponse = async (response) => {
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Something went wrong');
+    let errorMsg = "Request failed";
+    try {
+      const err = await response.json();
+      errorMsg = err.message || errorMsg;
+    } catch {
+      // No JSON in error response
+    }
+    throw new Error(errorMsg);
   }
-  return response.json();
+
+  // Handle 204 or empty body safely
+  if (response.status === 204) {
+    return { success: true };
+  }
+
+  // Try parsing JSON, or fallback to success
+  try {
+    const data = await response.json();
+    return data && Object.keys(data).length ? data : { success: true };
+  } catch {
+    return { success: true };
+  }
 };
 
 // Authentication headers
@@ -30,6 +48,23 @@ export const createTickets = async (ticketData, date) => {
   const requestBody = {
     tickets: ticketData,
     booking_date: date,
+  };
+  console.log('Final request body:', JSON.stringify(requestBody, null, 2));
+  console.log(requestBody)
+  const response = await fetch(`${API_BASE_URL}/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(requestBody),
+  });
+  return handleResponse(response);
+};
+export const createAgentTickets = async (ticketData, date, username) => {
+  const userName = String(username);
+  const requestBody = {
+    tickets: ticketData,
+    booking_date: date,
+    username: userName,
   };
   console.log('Final request body:', JSON.stringify(requestBody, null, 2));
   console.log(requestBody)
@@ -158,8 +193,8 @@ export const createUser = async (payload) => {
 export const updateUser = async (userId, payload) => {
   console.log(userId);
   console.log(payload);
-  const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-    method: 'PUT',
+  const response = await fetch(`${API_BASE_URL}/admin/users/?id=${userId}`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
@@ -169,7 +204,7 @@ export const updateUser = async (userId, payload) => {
 
 export const upgradeMember = async (userId, payload) => {
   const response = await fetch(`${API_BASE_URL}/agent/users/${userId}`, {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(payload),
@@ -352,4 +387,13 @@ export const loadWallet = async (userId, amount) => {
   }
   
   return response.json();
+};
+export const payByWallet = async (payload) => {
+  const response = await fetch(`${API_BASE_URL}/orders/process-payment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(response);
 };

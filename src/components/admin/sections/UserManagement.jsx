@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   getUsers,
-  updateUser,
+  upgradeMember,
   deleteUser
 } from '../../../api';
 
@@ -53,7 +53,7 @@ const UserManagement = () => {
       const payload = { role: roleId };
       console.log(payload);
       console.log(`Upgrading member with ID ${selectedUser.id}`);
-      await updateUser(selectedUser.id, payload);
+      await upgradeMember(selectedUser.id, payload);
       setMessage({ text: 'Member subscription upgraded successfully!', type: 'success' });
       setShowModal(false);
       setSelectedUser(null);
@@ -78,8 +78,8 @@ const UserManagement = () => {
       {message.text && (
         <div
           className={`mb-4 p-3 rounded-lg ${message.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
             }`}
         >
           {message.text}
@@ -231,8 +231,9 @@ const UserManagement = () => {
               onChange={(e) => setSelectedNewRole(e.target.value)}
               className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4"
             >
+              <option value="">Select Membership</option>
               {Object.entries(roleMap)
-                .filter(([value]) => value !== selectedNewRole.toString()) // ✅ hide the current role
+                .filter(([value]) => value !== selectedUser.role.toString()) // hide current role
                 .map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}

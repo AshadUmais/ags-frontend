@@ -42,22 +42,29 @@ const Members = () => {
   };
 
   const handleUpgradeConfirm = async () => {
-    if (!selectedUser || !selectedNewRole) return;
+  if (!selectedUser || !selectedNewRole) return;
 
-    try {
-      const roleId = parseInt(selectedNewRole);
-      const payload = { role: roleId };
-      console.log(payload);
-      console.log(`Upgrading member with ID ${selectedUser.id}`);
-      await upgradeMember(selectedUser.id, payload);
-      setMessage({ text: 'Member subscription upgraded successfully!', type: 'success' });
-      setShowModal(false);
-      setSelectedUser(null);
+  try {
+    const roleId = parseInt(selectedNewRole);
+    const payload = { role: roleId };
+
+    console.log(payload);
+    console.log(`Upgrading member with ID ${selectedUser.id}`);
+
+    const res = await upgradeMember(selectedUser.id, payload);
+
+    setMessage({ text: "✅ Member subscription upgraded successfully!", type: "success" });
+
+    setShowModal(false);
+    setSelectedUser(null);
+
+    setTimeout(async () => {
       await fetchUsers();
-    } catch (error) {
-      setMessage({ text: `Error upgrading member: ${error.message}`, type: 'error' });
-    }
-  };
+    }, 800);
+  } catch (error) {
+    setMessage({ text: `❌ Error upgrading member: ${error.message}`, type: "error" });
+  }
+};
 
   const filteredUsers = users.filter((user) => {
     const usernameMatch = user.username.toLowerCase().includes(usernameFilter.toLowerCase());

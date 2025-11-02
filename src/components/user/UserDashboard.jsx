@@ -245,20 +245,20 @@ export default function UserDashboard() {
   };
 
   const handleOrderClick = async (order) => {
-  setSelectedOrder(order);
-  setIsOrderModalOpen(true);
-  setLoadingOrderDetails(true);
+    setSelectedOrder(order);
+    setIsOrderModalOpen(true);
+    setLoadingOrderDetails(true);
 
-  try {
-    const orderDetails = await getOrderDetails(order.ID);
-    setSelectedOrder(orderDetails);
-  } catch (err) {
-    console.error('Failed to fetch order details:', err);
-    // Optionally show error message to user
-  } finally {
-    setLoadingOrderDetails(false);
-  }
-};
+    try {
+      const orderDetails = await getOrderDetails(order.ID);
+      setSelectedOrder(orderDetails);
+    } catch (err) {
+      console.error('Failed to fetch order details:', err);
+      // Optionally show error message to user
+    } finally {
+      setLoadingOrderDetails(false);
+    }
+  };
   const getOrderTicketCounts = (tickets) => {
     const adultCount = tickets.filter(t => t.title === 'Adult').length;
     const childCount = tickets.filter(t => t.title === 'Child').length;
@@ -314,11 +314,11 @@ export default function UserDashboard() {
   return (
     <>
       <Header />
-      <div className="min-h-screen p-3 sm:p-4 shine-effect shine-effect-slow" style={{ 
-        paddingTop: '7rem', 
-        paddingBottom: '0px', 
-        paddingInline: '0px', 
-        ...getUserBackground() 
+      <div className="min-h-screen p-3 sm:p-4 shine-effect shine-effect-slow" style={{
+        paddingTop: '7rem',
+        paddingBottom: '0px',
+        paddingInline: '0px',
+        ...getUserBackground()
       }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
@@ -636,12 +636,12 @@ export default function UserDashboard() {
         )}
 
         {isOrderModalOpen && selectedOrder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl max-w-md w-full h-fit max-h-[90vh] overflow-hidden relative flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-28 pb-4 z-40">
+            <div className="bg-white rounded-2xl max-w-xs w-full max-h-full relative flex flex-col shadow-2xl overflow-hidden">
 
               {/* Sticky Header with Close and Download buttons */}
-              <div className="flex justify-between items-center p-6 border-b flex-shrink-0">
-                <h2 className="text-xl font-semibold text-primary">Booking Details</h2>
+              <div className="flex justify-between items-center p-3 border-b flex-shrink-0">
+                <h2 className="text-base font-semibold text-primary">Booking Details</h2>
                 <div className="flex gap-2">
                   <button
                     id="download-ticket-btn"
@@ -650,23 +650,36 @@ export default function UserDashboard() {
                       const logo = document.getElementById('ticket-logo');
                       if (!ticketElement) return;
 
-                      const downloadBtn = document.getElementById('download-ticket-btn');
-                      const closeBtn = document.getElementById('close-ticket-btn');
-
                       try {
-                        // Hide buttons and show logo
-                        if (downloadBtn) downloadBtn.style.visibility = 'hidden';
-                        if (closeBtn) closeBtn.style.visibility = 'hidden';
-                        if (logo) logo.style.display = 'block';
+                        // Create a hidden clone for download
+                        const clone = ticketElement.cloneNode(true);
+                        clone.style.position = 'absolute';
+                        clone.style.left = '-9999px';
+                        clone.style.top = '0';
+                        clone.style.width = ticketElement.offsetWidth + 'px';
+                        document.body.appendChild(clone);
 
-                        // Wait for UI to update
+                        // Show logo in clone only
+                        const cloneLogo = clone.querySelector('#ticket-logo');
+                        if (cloneLogo) {
+                          cloneLogo.style.display = 'block';
+                          cloneLogo.classList.remove('hidden');
+                        }
+
+                        // Wait for images to load
                         await new Promise(resolve => setTimeout(resolve, 100));
-                        const canvas = await html2canvas(ticketElement, {
+
+                        // Capture the clone
+                        const canvas = await html2canvas(clone, {
                           backgroundColor: '#ffffff',
                           scale: 2,
                           logging: false,
-                          useCORS: true
+                          useCORS: true,
+                          allowTaint: true
                         });
+
+                        // Remove clone immediately
+                        document.body.removeChild(clone);
 
                         // Convert to blob and download
                         canvas.toBlob((blob) => {
@@ -680,18 +693,9 @@ export default function UserDashboard() {
                             document.body.removeChild(link);
                             URL.revokeObjectURL(url);
                           }
-
-                          // Show buttons and hide logo again
-                          if (downloadBtn) downloadBtn.style.visibility = 'visible';
-                          if (closeBtn) closeBtn.style.visibility = 'visible';
-                          if (logo) logo.style.display = 'none';
                         });
                       } catch (error) {
                         console.error('Error downloading ticket:', error);
-                        // Always restore UI on error
-                        if (downloadBtn) downloadBtn.style.visibility = 'visible';
-                        if (closeBtn) closeBtn.style.visibility = 'visible';
-                        if (logo) logo.style.display = 'none';
                         alert('Failed to download ticket. Please try again.');
                       }
                     }}
@@ -718,9 +722,9 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-              {/* Content - No scrolling, auto-fit */}
-              <div className="flex-1 p-6 overflow-hidden">
-                <div id="ticket-content" className="space-y-4">
+              {/* Content - Compact, no scrolling */}
+              <div className="flex-1 p-3 overflow-hidden">
+                <div id="ticket-content" className="space-y-2">
 
                   {/* Logo - Hidden in modal, shown in download */}
                   <div id="ticket-logo" className="hidden mb-4 text-center">
@@ -746,39 +750,39 @@ export default function UserDashboard() {
                       <p className="text-secondary text-sm">Loading...</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       {selectedOrder.qr_code && (
-                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200 text-center">
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-2 rounded-xl border border-purple-200 text-center">
                           <img
                             src={`${selectedOrder.qr_code}`}
                             alt="Order QR Code"
-                            className="w-32 h-32 mx-auto bg-white p-2 rounded-lg shadow"
+                            className="w-24 h-24 mx-auto bg-white p-1 rounded-lg shadow"
                             crossOrigin="anonymous"
                           />
-                          <p className="text-xs text-secondary mt-2">
+                          <p className="text-xs text-secondary mt-1">
                             Show this QR code at the venue
                           </p>
                         </div>
                       )}
 
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <h3 className="font-semibold text-primary mb-2 text-sm">Booking Info</h3>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-secondary">ID</span>
-                            <span className="font-medium">#{selectedOrder.order.ID}</span>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <h3 className="font-semibold text-primary mb-1 text-xs">Booking Info</h3>
+                        <div className="space-y-0.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-secondary text-xs">ID</span>
+                            <span className="font-medium text-xs">#{selectedOrder.order.ID}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-secondary">Date</span>
-                            <span className="font-medium">
+                          <div className="flex justify-between items-center">
+                            <span className="text-secondary text-xs">Date</span>
+                            <span className="font-medium text-xs">
                               {selectedOrder.order.tickets?.[0]?.booking_date
                                 ? formatDateFromInt(selectedOrder.order.tickets[0].booking_date)
                                 : 'N/A'}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-secondary">Status</span>
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(selectedOrder.order.order_status)}`}>
+                            <span className="text-secondary text-xs">Status</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(selectedOrder.order.order_status)}`}>
                               {selectedOrder.order.order_status &&
                                 selectedOrder.order.order_status.charAt(0).toUpperCase() +
                                 selectedOrder.order.order_status.slice(1).toLowerCase() || 'N/A'}
@@ -787,15 +791,15 @@ export default function UserDashboard() {
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="bg-gray-50 rounded-lg p-2">
                         <div className="flex justify-between items-center">
-                          <h3 className="font-semibold text-primary text-sm">Tickets</h3>
+                          <h3 className="font-semibold text-primary text-xs">Tickets</h3>
                           {(() => {
                             const tickets = selectedOrder.order?.tickets || [];
                             const adultCount = tickets.filter(t => t.title === "Adult").length;
                             const childCount = tickets.filter(t => t.title === "Child").length;
                             return (
-                              <span className="font-medium text-sm">
+                              <span className="font-medium text-xs">
                                 {adultCount} Adult, {childCount} Child
                               </span>
                             );
@@ -803,10 +807,10 @@ export default function UserDashboard() {
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-3">
+                      <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-2">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-primary text-sm">Total Paid</span>
-                          <span className="text-xl font-bold text-primary">₹{selectedOrder.order.total_amount}</span>
+                          <span className="font-semibold text-primary text-xs">Total Paid</span>
+                          <span className="text-lg font-bold text-primary">₹{selectedOrder.order.total_amount}</span>
                         </div>
                       </div>
                     </div>

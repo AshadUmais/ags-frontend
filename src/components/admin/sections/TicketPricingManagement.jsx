@@ -99,7 +99,7 @@ const TicketPricingManagement = () => {
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-4 border-b">
-        <h3 className="text-lg font-medium">Set Ticket Pricing by User Role</h3>
+        <h3 className="text-lg font-medium">Set Ticket Pricing by Members</h3>
       </div>
 
       <div className="p-4 sm:p-6 space-y-4">
@@ -158,7 +158,7 @@ const TicketPricingManagement = () => {
         </div>
 
         <div>
-          <h4 className="text-xs font-semibold text-gray-800 mb-3">Pricing by User Role</h4>
+          <h4 className="text-xs font-semibold text-gray-800 mb-3">Pricing by Members</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {roles.map(role => (
               <div key={role.key} className={`border rounded-lg p-3 ${role.bgColor} hover:shadow-md transition-shadow`}>
