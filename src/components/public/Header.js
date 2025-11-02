@@ -95,7 +95,13 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <div className="logo-section">
-          <Link to="/" className="logo-link" onClick={closeMenu}>
+          <Link to="/" className="logo-link" onClick={closeMenu} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img 
+              src="/assets/ags-logo.avif" 
+              alt="AGS Logo" 
+              className="logo-image"
+              style={{ height: '70px', width: 'auto' }}
+            />
             <img 
               src="/assets/ags-text.avif" 
               alt="AGS WONDERWORLD" 
@@ -160,7 +166,6 @@ const Header = () => {
         <div className="header-actions">
           {sessionStorage.getItem("isAuthenticated") ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">Welcome, {authRole?.replace("User", " Member")}</span>
               <button className="login-btn" onClick={handleLogout}>LOGOUT</button>
             </div>
           ) : (

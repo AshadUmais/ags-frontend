@@ -42,7 +42,7 @@ const PlayPage = () => {
       id: 5,
       name: "Splash Canyon",
       description: "Navigate through rushing rapids and cascading waterfalls in this exciting water adventure.",
-      image: "/assets/splash-canyon.jpg",
+      image: "/assets/splash-canyon.webp",
       duration: "8 minutes",
       minHeight: "120cm"
     },
@@ -58,7 +58,7 @@ const PlayPage = () => {
       id: 7,
       name: "Lazy River",
       description: "Relax and unwind as you float along our peaceful lazy river surrounded by tropical landscapes.",
-      image: "/assets/lazy-river.jpg",
+      image: "/assets/lazy-river.webp",
       duration: "20 minutes",
       minHeight: "No restriction"
     },
@@ -66,7 +66,7 @@ const PlayPage = () => {
       id: 8,
       name: "Wave Pool",
       description: "Enjoy the fun of ocean waves in our massive wave pool. Perfect for swimming and surfing.",
-      image: "/assets/wave-pool.jpg",
+      image: "/assets/wave-pool.webp",
       duration: "Continuous",
       minHeight: "No restriction"
     }
