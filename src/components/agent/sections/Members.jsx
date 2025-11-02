@@ -219,7 +219,6 @@ const Members = () => {
             <h3 className="text-lg font-semibold mb-4">
               Upgrade Subscription for <span className="text-blue-600">{selectedUser.username}</span>
             </h3>
-
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Select New Membership Level:
             </label>
@@ -228,11 +227,13 @@ const Members = () => {
               onChange={(e) => setSelectedNewRole(e.target.value)}
               className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4"
             >
-              {Object.entries(roleMap).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {Object.entries(roleMap)
+                .filter(([value]) => value !== selectedUser.role) // ✅ hide the current role
+                .map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
             </select>
 
             <div className="flex justify-end gap-3">

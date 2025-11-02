@@ -269,6 +269,27 @@ export const getAgents = async () => {
   return handleResponse(response);
 };
 
+export const getAgentOrder = async (agentId, date) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/agents/${agentId}/orders?date=${date}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to fetch agent orders');
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error('Error fetching agent order:', err);
+    throw err;
+  }
+};
+
+
 export const getAgentTickets = async (agentId) => {
   const response = await fetch(`${API_BASE_URL}/orders`, {
     headers: { 'Content-Type': 'application/json' },
