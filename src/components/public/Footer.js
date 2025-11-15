@@ -43,8 +43,8 @@ const Footer = () => {
         
         <div className="footer-links">
           <a href="/contact" className="footer-link">Contact Us</a>
-          <a href="/privacy" className="footer-link">Privacy Policy</a>
-          <a href="/cancellation" className="footer-link">Cancellation and Refund Policy</a>
+          <a href="/terms-and-conditions" className="footer-link">Terms and conditions</a>
+          <a href="/privacy-policy" className="footer-link">Privacy Policy</a>
         </div>
         
         <div className="footer-bottom">

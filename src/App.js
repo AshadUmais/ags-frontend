@@ -7,6 +7,8 @@ import UserDashboard from "./components/user/UserDashboard";
 import AgentDashboard from "./components/agent/AgentDashboard";
 import PublicApp from "./components/public/PublicApp";
 import LoginModal from "./components/common/LoginModal";
+import PrivacyPolicy from "./components/public/PrivacyPolicy";
+import TermsAndConditions from "./components/public/TermsAndConditions";
 
 function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -61,6 +63,10 @@ function App() {
         {/* Authentication Routes */}
         <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
         <Route path="/admin/login" element={<AdminLoginPage onLoginSuccess={handleLoginSuccess} />} />
+        
+        {/* Public Information Routes */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         
         {/* Protected Routes */}
         <Route 
