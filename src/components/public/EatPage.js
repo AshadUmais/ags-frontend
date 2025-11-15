@@ -14,14 +14,14 @@ const EatPage = () => {
       id: 2,
       name: "Chinese Corner",
       description: "Delicious Chinese dishes with fresh ingredients and bold flavors",
-      image: "https://images.unsplash.com/photo-1563379091339-03246963d96c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      image: "/assets/chinese-corner.jpg",
       specialties: ["Fried Rice", "Noodles", "Manchurian", "Dim Sum"]
     },
     {
       id: 3,
       name: "Continental Classics",
       description: "International favorites and continental dishes for all tastes",
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2061&q=80",
+      image: "/assets/continental-classics.jpg",
       specialties: ["Pasta", "Pizza", "Sandwiches", "Salads"]
     },
     {
@@ -156,20 +156,6 @@ const EatPage = () => {
               <div className="feature-icon">💰</div>
               <h3>Value Pricing</h3>
               <p>Affordable pricing with generous portions for the whole family</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="eat-cta">
-        <div className="container">
-          <div className="cta-content">
-            <h2>Ready to Satisfy Your Cravings?</h2>
-            <p>Visit our restaurant and experience the perfect blend of taste, quality, and service</p>
-            <div className="cta-buttons">
-              <button className="cta-btn primary">View Full Menu</button>
-              <button className="cta-btn secondary">Make Reservation</button>
             </div>
           </div>
         </div>

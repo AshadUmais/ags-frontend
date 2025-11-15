@@ -297,47 +297,14 @@
 .map-container {
   max-width: 800px;
   margin: 0 auto;
-}
-
-.map-placeholder {
-  height: 400px;
-  background: linear-gradient(135deg, #7662B4,#7662b49d);
   border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-align: center;
+  overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
 
-.map-content h3 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  font-weight: 700;
-}
-
-.map-content p {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
-  opacity: 0.9;
-}
-
-.directions-btn {
-  background: white;
-  color: #ff6b35;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.directions-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+.map-container iframe {
+  display: block;
+  border-radius: 20px;
 }
 
 /* Emergency Section */

@@ -9,6 +9,7 @@ import PublicApp from "./components/public/PublicApp";
 import LoginModal from "./components/common/LoginModal";
 import PrivacyPolicy from "./components/public/PrivacyPolicy";
 import TermsAndConditions from "./components/public/TermsAndConditions";
+import RefundPolicy from "./components/public/RefundPolicy";
 
 function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -67,6 +68,7 @@ function App() {
         {/* Public Information Routes */}
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         
         {/* Protected Routes */}
         <Route 

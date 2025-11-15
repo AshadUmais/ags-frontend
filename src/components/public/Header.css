@@ -83,6 +83,10 @@
   transition: color 0.3s ease;
   letter-spacing: 0.5px;
   position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .nav-link:hover,
@@ -123,6 +127,31 @@
   box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
 }
 
+.nav-auth-item {
+  display: none;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.nav-auth-btn {
+  background: linear-gradient(135deg, #ffe988, #ffd000);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.nav-auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -131,6 +160,8 @@
   cursor: pointer;
   padding: 0.5rem;
   gap: 4px;
+  z-index: 1001;
+  position: relative;
 }
 
 .menu-toggle span {
@@ -148,16 +179,13 @@
     right: 0;
     background: white;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
     transition: all 0.3s ease;
   }
 
-  .nav-open .navigation {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
+  .navigation.nav-open {
+    max-height: 500px;
   }
 
   .nav-list {
@@ -170,15 +198,27 @@
     display: flex;
   }
 
-  .nav-open .menu-toggle span:nth-child(1) {
+  .menu-toggle span {
+    transition: 0.3s;
+  }
+
+  .navigation.nav-open .menu-toggle span:nth-child(1) {
     transform: rotate(45deg) translate(6px, 6px);
   }
 
-  .nav-open .menu-toggle span:nth-child(2) {
+  .navigation.nav-open .menu-toggle span:nth-child(2) {
     opacity: 0;
   }
 
-  .nav-open .menu-toggle span:nth-child(3) {
+  .navigation.nav-open .menu-toggle span:nth-child(3) {
     transform: rotate(-45deg) translate(6px, -6px);
+  }
+
+  .nav-auth-item {
+    display: block;
+  }
+
+  .header-actions {
+    display: none;
   }
 }

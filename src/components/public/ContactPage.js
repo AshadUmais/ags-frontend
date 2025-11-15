@@ -76,7 +76,7 @@ const ContactPage = () => {
       <section className="contact-hero">
         <div className="contact-hero-image">
           <img 
-            src="https://images.unsplash.com/photo-1486312338219-ce68e2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80" 
+            src="/assets/ags-logo.jpeg" 
             alt="Contact Us" 
           />
           <div className="contact-hero-overlay">
@@ -254,14 +254,16 @@ const ContactPage = () => {
         <div className="container">
           <h2 className="section-title">Find Us</h2>
           <div className="map-container">
-            <div className="map-placeholder">
-              <div className="map-content">
-                <h3>AGS Wonderworld Location</h3>
-                <p>212/2, Nilavur Main Road, Yelagiri Hills</p>
-                <p>Tirupattur District - 635 853</p>
-                <button className="directions-btn">Get Directions</button>
-              </div>
-            </div>
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27186.353410344356!2d78.61741013246265!3d12.587671477316409!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3badabc281dac5a5%3A0xd3a465d2dba04824!2sAGS%20WONDER%20WORLD%20PRIVATE%20LIMITED!5e0!3m2!1sen!2sin!4v1763240259490!5m2!1sen!2sin"
+              width="100%"
+              height="450"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="AGS Wonderworld Location"
+            ></iframe>
           </div>
         </div>
       </section>

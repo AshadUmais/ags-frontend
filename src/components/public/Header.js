@@ -158,10 +158,23 @@ const Header = () => {
                     CONTACT
                   </Link>
                 </li>
+                <li className="nav-auth-item">
+                  {sessionStorage.getItem("isAuthenticated") ? (
+                    <button className="nav-auth-btn" onClick={handleLogout}>LOGOUT</button>
+                  ) : (
+                    <button className="nav-auth-btn" onClick={handleLoginClick}>LOGIN</button>
+                  )}
+                </li>
               </>
             
           </ul>
         </nav>
+
+        <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
 
         <div className="header-actions">
           {sessionStorage.getItem("isAuthenticated") ? (
@@ -171,11 +184,6 @@ const Header = () => {
           ) : (
             <button className="login-btn" onClick={handleLoginClick}>LOGIN</button>
           )}
-          <button className="menu-toggle" onClick={toggleMenu}>
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
         </div>
       </div>
     </header>

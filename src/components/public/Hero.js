@@ -41,6 +41,14 @@ const Hero = () => {
     }
   };
 
+  const handleDine = () => {
+    navigate('/eat');
+  };
+
+  const handleExplore = () => {
+    navigate('/play');
+  };
+
   return (
     <section className="hero" id="home">
       <div className="hero-slider">
@@ -71,9 +79,8 @@ const Hero = () => {
               for all ages.
             </p>
             <div className="hero-action-buttons">
-              <button className="action-btn dine-btn">DINE</button>
-              <button className="action-btn explore-btn">EXPLORE</button>
-              <button className="action-btn relax-btn">RELAX & ENJOY</button>
+              <button className="action-btn dine-btn" onClick={handleDine}>DINE</button>
+              <button className="action-btn explore-btn" onClick={handleExplore}>EXPLORE</button>
             </div>
           </div>
         </div>
