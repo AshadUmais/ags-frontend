@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTicketCount, createAgentTickets, getMyWallet, getTicketPricing, payByWallet } from '../../../api';
+import { getTicketCount, createAgentTickets, getMyWallet, getTicketPricing, makePayment } from '../../../api';
 
 const CalendarIcon = () => (
   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,7 +153,7 @@ const BookTickets = () => {
           order_id: orderId,
           pg_type: 1
         };
-        const response = await payByWallet(paymentData);
+        const response = await makePayment(paymentData);
         // On success, close modal and reset form
         setShowPaymentCard(false);
         setCustomerMobile('');

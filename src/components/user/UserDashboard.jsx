@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTicketCount, createTickets, getTicketPricing, createOrder, getMyOrders, getOrderDetails } from '../../api';
+import { getTicketCount, createTickets, getTicketPricing, makePayment, getPaymentStatus, getMyOrders, getOrderDetails } from '../../api';
 import Header from '../public/Header';
 import html2canvas from 'html2canvas';
 
@@ -49,9 +49,35 @@ export default function UserDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [currentTransactionId, setCurrentTransactionId] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [phonepeScriptLoaded, setPhonepeScriptLoaded] = useState(false);
+  const [paymentTimeoutId, setPaymentTimeoutId] = useState(null);
+
+  // Load PhonePe Checkout Script
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://mercury.phonepe.com/web/bundle/checkout.js';
+    script.async = true;
+    script.onload = () => {
+      console.log('PhonePe Checkout script loaded successfully');
+      setPhonepeScriptLoaded(true);
+    };
+
+    script.onerror = () => {
+      console.error('Failed to load PhonePe Checkout script');
+      setError('Failed to load payment gateway. Please refresh the page.');
+    };
+
+    document.body.appendChild(script);
+    return () => {
+     // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserTickets = async () => {
@@ -188,13 +214,22 @@ export default function UserDashboard() {
     }
   };
 
-  const handleBooking = async (e) => {
-    e?.preventDefault?.();
+  const initiatePayment = async () => {
+    if (!phonepeScriptLoaded) {
+      setError('Payment gateway not loaded. Please refresh the page.');
+      return;
+    }
+
+    if (!window.PhonePeCheckout) {
+      setError('PhonePe checkout not available. Please refresh the page.');
+      return;
+    }
 
     try {
       setLoading(true);
       setError('');
 
+      // First create tickets
       const ticketsRequest = {
         Adult: tickets.adult,
         Child: tickets.child
@@ -206,40 +241,175 @@ export default function UserDashboard() {
       if (!ticketResponse || !ticketResponse.tickets) {
         throw new Error('Invalid ticket creation response');
       }
+      
+      const orderId = ticketResponse.ID;
+      console.log('Order ID:', orderId);
+      
+      const paymentTrans = {
+        order_id: orderId,
+        pg_type: 0
+      };
 
-      // const orderData = {
-      //   ticket_ids: ticketResponse.tickets.map(t => t.id),
-      //   total_amount: calculateTotal(),
-      //   currency: 'INR'
-      // };
-      // await createOrder(orderData);
+      const paymentData = await makePayment(paymentTrans);
+      console.log('Payment Data:', paymentData);
+      
+      if (!paymentData.payment_url) {
+        throw new Error(paymentData.message || 'Failed to initiate payment');
+      }
 
-      const updatedTickets = await getMyOrders();
-      setUserTickets(updatedTickets || []);
-
-      setTickets({ adult: 0, child: 0 });
-      setBookingDate('');
-      setError('');
-      setBookingStep(1);
+      // Store transaction ID
+      setCurrentTransactionId(orderId);
       setIsBookingModalOpen(false);
 
-      setPaymentSuccess(true);
+      // Set up 5-minute auto-cancel timeout
+      const timeoutId = setTimeout(() => {
+        console.log('Payment timeout - auto-cancelling after 5 minutes');
+        
+        // Close the PhonePe iframe if it exists
+        try {
+          if (window.PhonePeCheckout && window.PhonePeCheckout.close) {
+            window.PhonePeCheckout.close();
+          }
+        } catch (e) {
+          console.error('Error closing PhonePe iframe:', e);
+        }
 
-      setTimeout(() => {
-        setPaymentSuccess(false);
-        setIsPaymentModalOpen(false);
-      }, 5000);
+        // Reset state
+        setError('Payment session expired. Please try booking again.');
+        setIsBookingModalOpen(true);
+        setLoading(false);
+        setCurrentTransactionId(null);
+      }, 5 * 60 * 1000); // 5 minutes in milliseconds
+
+      setPaymentTimeoutId(timeoutId);
+
+      // Define callback function
+      const callback = (response) => {
+        console.log('PhonePe Callback Response:', response);
+
+        try {
+          // Clear the timeout when payment completes or is cancelled
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            setPaymentTimeoutId(null);
+          }
+
+          if (response === 'USER_CANCEL') {
+            // User cancelled the payment
+            console.log('User cancelled payment');
+            setError('Payment cancelled by user. Please try again.');
+            setIsBookingModalOpen(true);
+            setLoading(false);
+            setCurrentTransactionId(null);
+          } else if (response === 'CONCLUDED') {
+            // Transaction concluded - check status
+            console.log('Payment concluded, checking status...');
+            checkPaymentStatus(orderId).catch(err => {
+              console.error('Error in checkPaymentStatus:', err);
+              setError('Failed to verify payment. Please check My Tickets section.');
+              setLoading(false);
+            });
+          } else {
+            console.log('Unexpected callback response:', response);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Error in PhonePe callback:', error);
+          setError('An error occurred. Please check My Tickets section.');
+          setLoading(false);
+        }
+      };
+
+      // Open PhonePe PayPage in IFRAME mode
+      console.log('Initiating PhonePe transaction with URL:', paymentData.payment_url);
+      
+      try {
+        window.PhonePeCheckout.transact({
+          tokenUrl: paymentData.payment_url,
+          callback: callback,
+          type: 'IFRAME'
+        });
+        console.log('PhonePe transact called successfully');
+      } catch (transactError) {
+        console.error('Error calling PhonePe transact:', transactError);
+        // Clear timeout if transact fails
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          setPaymentTimeoutId(null);
+        }
+        throw new Error('Failed to open payment window: ' + transactError.message);
+      }
+
     } catch (err) {
-      console.error('Booking error:', err);
-      setError(err.message || 'Failed to process booking. Please try again.');
-      setIsPaymentModalOpen(false);
-    } finally {
+      console.error('Payment initiation error:', err);
+      setError(err.message || 'Failed to initiate payment. Please try again.');
       setLoading(false);
     }
   };
 
+  const checkPaymentStatus = async (orderId) => {
+  try {
+    setLoading(true);
+
+    // getPaymentStatus already returns the JSON object
+    const data = await getPaymentStatus(orderId);
+
+    console.log("Payment status response:", data);
+
+    if (data.status === 'COMPLETED') {
+      // Payment successful - refresh tickets
+      const updatedTickets = await getMyOrders();
+      setUserTickets(updatedTickets || []);
+
+      // Fetch the order details for the completed order
+      try {
+        const orderDetails = await getOrderDetails(orderId);
+        
+        // Reset booking state
+        setTickets({ adult: 0, child: 0 });
+        setBookingDate('');
+        setBookingStep(1);
+        setCurrentTransactionId(null);
+
+        // Open the order modal with the newly booked ticket
+        setSelectedOrder(orderDetails);
+        setIsOrderModalOpen(true);
+        setLoadingOrderDetails(false);
+        
+        // Optional: Show a brief success message
+        alert('Payment successful! Your tickets have been booked.');
+      } catch (detailsErr) {
+        console.error('Failed to fetch order details:', detailsErr);
+        // Still reset state and show generic success
+        setTickets({ adult: 0, child: 0 });
+        setBookingDate('');
+        setBookingStep(1);
+        setCurrentTransactionId(null);
+        alert('Payment successful! Your tickets have been booked.');
+      }
+    } 
+    else if (
+      data.status === 'FAILED' ||
+      data.status === 'PAYMENT_ERROR' ||
+      data.status === 'PAYMENT_DECLINED'
+    ) {
+      setError('Payment failed. Please try again.');
+    } 
+    else {
+      setError('Payment status: ' + (data.status || 'PENDING'));
+    }
+
+  } catch (err) {
+    console.error('Status check error:', err);
+    setError('Failed to verify payment status. Please contact support.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const handleConfirmBooking = () => {
-    setIsPaymentModalOpen(true);
+    initiatePayment();
   };
 
   const handleOrderClick = async (order) => {
@@ -252,11 +422,11 @@ export default function UserDashboard() {
       setSelectedOrder(orderDetails);
     } catch (err) {
       console.error('Failed to fetch order details:', err);
-      // Optionally show error message to user
     } finally {
       setLoadingOrderDetails(false);
     }
   };
+
   const getOrderTicketCounts = (tickets) => {
     const adultCount = tickets.filter(t => t.title === 'Adult').length;
     const childCount = tickets.filter(t => t.title === 'Child').length;
@@ -275,6 +445,7 @@ export default function UserDashboard() {
         return 'bg-gray-100 text-gray-700';
     }
   };
+
   const getUserBackground = () => {
     const authRole = localStorage.getItem("authRole");
     const baseSize = '400% 400%';
@@ -289,7 +460,6 @@ export default function UserDashboard() {
         return {
           background: 'linear-gradient(45deg, #c0c0c0, #e8e8e8, #f5f5f5, #d3d3d3, #c0c0c0)',
           backgroundSize: baseSize,
-          //animation: 'sheenEffect 4s ease-in-out infinite'
         };
       case "PlatinumUser":
         return {
@@ -418,6 +588,7 @@ export default function UserDashboard() {
           </div>
         </div>
 
+        {/* Booking Modal */}
         {isBookingModalOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl max-w-lg w-full p-6 max-h-screen overflow-y-auto">
@@ -620,7 +791,7 @@ export default function UserDashboard() {
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
                   >
-                    {bookingStep === 3 ? 'Confirm Booking' : 'Next'}
+                    {bookingStep === 3 ? 'Proceed to Payment' : 'Next'}
                   </button>
                 ) : (
                   <div className="px-6 py-2 bg-gray-200 text-gray-500 rounded-lg ml-auto flex items-center gap-2">
@@ -633,6 +804,7 @@ export default function UserDashboard() {
           </div>
         )}
 
+        {/* Order Details Modal */}
         {isOrderModalOpen && selectedOrder && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-28 pb-4 z-40">
             <div className="bg-white rounded-2xl max-w-xs w-full max-h-full relative flex flex-col shadow-2xl overflow-hidden">
@@ -645,7 +817,6 @@ export default function UserDashboard() {
                     id="download-ticket-btn"
                     onClick={async () => {
                       const ticketElement = document.getElementById('ticket-content');
-                      const logo = document.getElementById('ticket-logo');
                       if (!ticketElement) return;
 
                       try {
@@ -709,7 +880,6 @@ export default function UserDashboard() {
                     aria-label="Download ticket"
                   >
                     {isDownloading ? (
-                      // Spinning loader animation
                       <svg className="w-5 h-5 text-primary animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
@@ -726,7 +896,6 @@ export default function UserDashboard() {
                         />
                       </svg>
                     ) : (
-                      // Download icon
                       <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
@@ -844,82 +1013,6 @@ export default function UserDashboard() {
                 </div>
               </div>
 
-            </div>
-          </div>
-        )}
-
-        {/* Payment Gateway Modal */}
-        {isPaymentModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6">
-              {!paymentSuccess ? (
-                <>
-                  <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-2xl font-semibold text-primary mb-2">Payment Gateway</h2>
-                    <p className="text-secondary text-sm">Mock Payment Processing</p>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 mb-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-secondary">Amount to Pay</span>
-                      <span className="text-3xl font-bold text-primary">₹{calculateTotal()}</span>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-secondary">Booking Date</span>
-                        <span className="font-medium">{formatDate(bookingDate)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-secondary">Total Tickets</span>
-                        <span className="font-medium">{getTotalTickets()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <button
-                      onClick={handleBooking}
-                      disabled={loading}
-                      className="w-full px-6 py-3 bg-accent text-primary rounded-xl shadow-lg hover:brightness-95 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
-                          Processing Payment...
-                        </span>
-                      ) : (
-                        'Pay Now'
-                      )}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsPaymentModalOpen(false);
-                        setError('');
-                      }}
-                      disabled={loading}
-                      className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-scale-in">
-                    <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-semibold text-green-600 mb-2">Payment Successful!</h2>
-                  <p className="text-secondary">Your booking has been confirmed</p>
-                  <p className="text-sm text-gray-500 mt-4">Redirecting to your tickets...</p>
-                </div>
-              )}
             </div>
           </div>
         )}

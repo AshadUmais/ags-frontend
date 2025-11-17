@@ -153,7 +153,7 @@ export const processPayment = async (orderId, paymentData) => {
   return handleResponse(response);
 };
 
-export const getPaymentStatus = async (orderId) => {
+export const getPaymntStatus = async (orderId) => {
   const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-status`, {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -387,7 +387,8 @@ export const loadWallet = async (userId, amount) => {
   
   return response.json();
 };
-export const payByWallet = async (payload) => {
+//Payment API
+export const makePayment = async (payload) => {
   const response = await fetch(`${API_BASE_URL}/orders/process-payment`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -395,4 +396,23 @@ export const payByWallet = async (payload) => {
     body: JSON.stringify(payload),
   });
   return handleResponse(response);
+};
+export const getPaymentStatus = async (orderId) => {
+  try {
+    console.log("Fetching payment status for orderId:", orderId);
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payment-status`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching payment status:', error);
+    throw error;
+  }
 };

@@ -10,6 +10,7 @@ import LoginModal from "./components/common/LoginModal";
 import PrivacyPolicy from "./components/public/PrivacyPolicy";
 import TermsAndConditions from "./components/public/TermsAndConditions";
 import RefundPolicy from "./components/public/RefundPolicy";
+import TicketChecker from "./components/agentTc/TicketChecker";
 
 function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -46,6 +47,8 @@ function App() {
       window.location.href = "/bookings";
     } else if (data.role === "agent") {
       window.location.href = "/agent/dashboard";
+    } else if(data.role === "agentTC"){
+      window.location.href = "/agentTc/dashboard";
     }
   };
 
@@ -100,6 +103,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["agent"]}>
               <AgentDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/agentTc/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["agentTC"]}>
+              <TicketChecker />
             </ProtectedRoute>
           } 
         />
