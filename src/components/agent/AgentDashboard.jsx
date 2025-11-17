@@ -31,8 +31,8 @@ export default function AgentDashboard() {
   };
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authRole');
+    sessionStorage.clear();
+    localStorage.clear();
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")

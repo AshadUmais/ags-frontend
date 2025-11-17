@@ -12,7 +12,7 @@ export default function AdminLoginPage({ onLoginSuccess }) {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:8080/api';
     }
-    return `http://${window.location.hostname}:8080/api`;
+    return `https://${window.location.hostname}/api`;
   };
 
   async function handleAdminLogin(e) {
@@ -63,7 +63,7 @@ export default function AdminLoginPage({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
       <div className="max-w-md w-full bg-bg-white rounded-2xl shadow-lg p-6">
         <div className="flex justify-center mb-6">
           <img

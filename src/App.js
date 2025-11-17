@@ -30,8 +30,8 @@ function App() {
     console.log("Logged in:", data);
     
     // Store auth data
-    localStorage.setItem("authToken", data.token || "");
-    localStorage.setItem("authRole", data.role || "");
+    sessionStorage.setItem("authToken", data.token || "");
+    sessionStorage.setItem("authRole", data.role || "");
 
     // Close the modal
     setShowLoginModal(false);
@@ -51,10 +51,18 @@ function App() {
 
   // Protected Route component
   const ProtectedRoute = ({ children, allowedRoles }) => {
-    const role = localStorage.getItem("authRole");
+    const role = sessionStorage.getItem("authRole");
+    
+    // If no role is set, redirect to login
+    if (!role) {
+      return <Navigate to="/admin/login" replace />;
+    }
+    
+    // Check if role is allowed
     if (!allowedRoles.includes(role)) {
       return <Navigate to="/" replace />;
     }
+    
     return children;
   };
 
