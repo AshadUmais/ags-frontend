@@ -573,7 +573,7 @@ export default function UserDashboard() {
                       </div>
 
                       <div className="pt-3 border-t border-purple-200 flex justify-between items-center">
-                        <span className="text-sm font-medium text-secondary">Total Amount</span>
+                        <span className="text-sm font-medium text-secondary">Total Amount (Inclusive of all taxes)</span>
                         <span className="text-lg font-bold text-primary">₹{order.total_amount}</span>
                       </div>
 
