@@ -1,5 +1,5 @@
-const API_BASE_URL = 'https://www.agswonderworld.com/api';  // Using relative URL to work with proxy
-
+//const API_BASE_URL = 'https://www.agswonderworld.com/api';  // Using relative URL to work with proxy
+const API_BASE_URL = 'http://localhost:8080/api';  // Using relative URL to work with proxy
 // Helper function to handle responses
 export const handleResponse = async (response) => {
   if (!response.ok) {

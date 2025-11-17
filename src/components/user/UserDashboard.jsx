@@ -283,8 +283,8 @@ export default function UserDashboard() {
 
       setPaymentTimeoutId(timeoutId);
 
-      // Define callback function
-      const callback = (response) => {
+      // Define callback function BEFORE passing to transact
+      const handlePhonePeCallback = (response) => {
         console.log('PhonePe Callback Response:', response);
 
         try {
@@ -326,7 +326,7 @@ export default function UserDashboard() {
       try {
         window.PhonePeCheckout.transact({
           tokenUrl: paymentData.payment_url,
-          callback: callback,
+          callback: handlePhonePeCallback,
           type: 'IFRAME'
         });
         console.log('PhonePe transact called successfully');
@@ -447,7 +447,7 @@ export default function UserDashboard() {
   };
 
   const getUserBackground = () => {
-    const authRole = localStorage.getItem("authRole");
+    const authRole = sessionStorage.getItem("authRole");
     const baseSize = '400% 400%';
     switch (authRole) {
       case "GoldUser":
@@ -491,7 +491,7 @@ export default function UserDashboard() {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-lg sm:text-xl font-semibold text-primary">Hello, {localStorage.getItem("authRole")?.replace(/^(\w+)?User$/, (m, prefix) => `${prefix || "Classic"} Member`) || "Classic Member"}!</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-primary">Hello, {sessionStorage.getItem("authRole")?.replace(/^(\w+)?User$/, (m, prefix) => `${prefix || "Classic"} Member`) || "Classic Member"}!</h1>
               <p className="text-sm text-secondary">Book your tickets here</p>
             </div>
             <div className="flex gap-3">

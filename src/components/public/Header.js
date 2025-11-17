@@ -15,8 +15,8 @@ const Header = () => {
   // Check authentication status
   useEffect(() => {
     const checkAuthStatus = () => {
-      const authToken = localStorage.getItem("authToken");
-      const role = localStorage.getItem("authRole");
+      const authToken = sessionStorage.getItem("authToken");
+      const role = sessionStorage.getItem("authRole");
       const isAuthenticated = sessionStorage.getItem("isAuthenticated");
       setIsLoggedIn(!!(authToken && role && isAuthenticated));
       setAuthRole(role || '');
@@ -52,7 +52,7 @@ const Header = () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     sessionStorage.clear(); // Also clear sessionStorage
     setIsLoggedIn(false);
     setAuthRole('');
@@ -63,8 +63,8 @@ const Header = () => {
   };
 
   const handleBookTicketsClick = () => {
-    const authToken = localStorage.getItem("authToken");
-    const authRole = localStorage.getItem("authRole");
+    const authToken = sessionStorage.getItem("authToken");
+    const authRole = sessionStorage.getItem("authRole");
     const isAuthenticated = sessionStorage.getItem("isAuthenticated");
     if (isAuthenticated) {
       // User is logged in, redirect to appropriate dashboard

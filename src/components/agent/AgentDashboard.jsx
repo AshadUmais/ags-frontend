@@ -32,7 +32,7 @@ export default function AgentDashboard() {
 
   const handleLogout = useCallback(() => {
     sessionStorage.clear();
-    localStorage.clear();
+    sessionStorage.clear();
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")

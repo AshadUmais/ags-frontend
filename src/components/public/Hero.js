@@ -20,8 +20,8 @@ const Hero = () => {
   };
 
   const handleBookTickets = () => {
-    const authToken = localStorage.getItem("authToken");
-    const authRole = localStorage.getItem("authRole");
+    const authToken = sessionStorage.getItem("authToken");
+    const authRole = sessionStorage.getItem("authRole");
     
     if (authToken && authRole) {
       // User is logged in, redirect to appropriate dashboard

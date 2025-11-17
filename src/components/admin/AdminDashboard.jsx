@@ -22,8 +22,8 @@ export default function AdminDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('authRole');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('authRole');
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
