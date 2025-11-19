@@ -284,7 +284,7 @@ export default function UserDashboard() {
       setPaymentTimeoutId(timeoutId);
 
       // Define callback function BEFORE passing to transact
-      const handlePhonePeCallback = (response) => {
+      window.handlePhonePeCallback = function (response) {
         console.log('PhonePe Callback Response:', response);
 
         try {
@@ -326,7 +326,7 @@ export default function UserDashboard() {
       try {
         window.PhonePeCheckout.transact({
           tokenUrl: paymentData.payment_url,
-          callback: handlePhonePeCallback,
+          callback: window.handlePhonePeCallback,
           type: 'IFRAME'
         });
         console.log('PhonePe transact called successfully');
@@ -377,7 +377,7 @@ export default function UserDashboard() {
         setLoadingOrderDetails(false);
         
         // Optional: Show a brief success message
-        alert('Payment successful! Your tickets have been booked.');
+        // alert('Payment successful! Your tickets have been booked.');
       } catch (detailsErr) {
         console.error('Failed to fetch order details:', detailsErr);
         // Still reset state and show generic success
@@ -385,7 +385,7 @@ export default function UserDashboard() {
         setBookingDate('');
         setBookingStep(1);
         setCurrentTransactionId(null);
-        alert('Payment successful! Your tickets have been booked.');
+        // alert('Payment successful! Your tickets have been booked.');
       }
     } 
     else if (
@@ -573,7 +573,7 @@ export default function UserDashboard() {
                       </div>
 
                       <div className="pt-3 border-t border-purple-200 flex justify-between items-center">
-                        <span className="text-sm font-medium text-secondary">Total Amount (Inclusive of all taxes)</span>
+                        <span className="text-sm font-medium text-secondary">Total Amount</span>
                         <span className="text-lg font-bold text-primary">₹{order.total_amount}</span>
                       </div>
 
@@ -755,7 +755,7 @@ export default function UserDashboard() {
                           </div>
                         )}
                         <div className="flex justify-between pt-2 border-t border-gray-300">
-                          <span className="font-semibold text-primary">Total Amount</span>
+                          <span className="font-semibold text-primary">Total Amount (Inclusive of all taxes)</span>
                           <span className="font-semibold text-primary text-lg">₹{calculateTotal()}</span>
                         </div>
                       </div>

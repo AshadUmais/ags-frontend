@@ -101,17 +101,18 @@ export default function TicketChecker() {
     }
 
     try {
-      // Replace with your API call: const res = await getOrderByQR(hexCode);
-      const response = await fetch(`/api/order/${hexCode}`);
-      if (!response.ok) throw new Error('Order not found');
+      const data = await getOrderByQR(hexCode);
+      console.log("Fetched order data:", data);
       
-      const data = await response.json();
-      setOrder(data.order);
+      // Handle the response structure - data might have .order or be the order itself
+      const orderData = data.order || data;
+      
+      setOrder(orderData);
       playSuccessFeedback();
       
       // Add to scan history
       setScanHistory(prev => [{
-        id: data.order.ID,
+        id: orderData.ID,
         time: new Date().toLocaleTimeString(),
         status: 'scanned'
       }, ...prev.slice(0, 9)]);
@@ -154,11 +155,7 @@ export default function TicketChecker() {
       setLoading(true);
       
       // Replace with your API call: await updateOrderCheckIn(scannedCode, order);
-      const response = await fetch(`/api/order/${scannedCode}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order)
-      });
+      const response = await updateOrderCheckIn(order);
 
       if (response.ok) {
         setSuccess(true);
@@ -398,7 +395,7 @@ export default function TicketChecker() {
                   >
                     <div>
                       <span className="font-medium text-gray-800">{ticket.title}</span>
-                      <span className="text-sm text-gray-600 ml-2">#{ticket.number}</span>
+                      <span className="text-sm text-gray-600 ml-2">#{ticket.id}</span>
                     </div>
                     <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                       ticket.checkedIn

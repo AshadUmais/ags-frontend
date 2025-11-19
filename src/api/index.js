@@ -1,5 +1,12 @@
 //const API_BASE_URL = 'https://www.agswonderworld.com/api';  // Using relative URL to work with proxy
-const API_BASE_URL = 'http://localhost:8080/api';  // Using relative URL to work with proxy
+const getAPIBaseURL = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8080/api';
+    }
+    return `https://${window.location.hostname}/api`;
+  };
+
+const API_BASE_URL = getAPIBaseURL();
 // Helper function to handle responses
 export const handleResponse = async (response) => {
   if (!response.ok) {
@@ -416,3 +423,33 @@ export const getPaymentStatus = async (orderId) => {
     throw error;
   }
 };
+export const getOrderByQR = async (qrData) => {
+
+    const response = await fetch(`${API_BASE_URL}/tc/qr-decode`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ qr_code: qrData }),
+    });
+    var res = await handleResponse(response);
+    for (const ticket of res.tickets) {
+      if(ticket.status === "in") {
+        ticket.checkedIn = true;
+      }
+    }
+    return res;
+};
+export const updateOrderCheckIn = async (order) => {
+  for (const ticket of order.tickets) {
+    if (ticket.checkedIn) {
+      ticket.status = "in";
+    }
+  }
+  const response = await fetch(`${API_BASE_URL}/tc/update-tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(order),
+  });
+  return handleResponse(response);
+}
