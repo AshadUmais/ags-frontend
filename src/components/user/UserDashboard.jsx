@@ -53,30 +53,30 @@ export default function UserDashboard() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [phonepeScriptLoaded, setPhonepeScriptLoaded] = useState(false);
   const [paymentTimeoutId, setPaymentTimeoutId] = useState(null);
+  const [showTicketGenerating, setShowTicketGenerating] = useState(false);
 
   // Load PhonePe Checkout Script
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://mercury.phonepe.com/web/bundle/checkout.js';
+    if (window._phonePeLoaded) {
+      setPhonepeScriptLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://mercury.phonepe.com/web/bundle/checkout.js";
     script.async = true;
+
     script.onload = () => {
-      console.log('PhonePe Checkout script loaded successfully');
+      window._phonePeLoaded = true;
       setPhonepeScriptLoaded(true);
     };
 
     script.onerror = () => {
-      console.error('Failed to load PhonePe Checkout script');
-      setError('Failed to load payment gateway. Please refresh the page.');
+      setError("Failed to load PhonePe payment script.");
     };
 
     document.body.appendChild(script);
-    return () => {
-     // Cleanup script on unmount
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
   }, []);
 
   useEffect(() => {
@@ -241,10 +241,10 @@ export default function UserDashboard() {
       if (!ticketResponse || !ticketResponse.tickets) {
         throw new Error('Invalid ticket creation response');
       }
-      
+
       const orderId = ticketResponse.ID;
       console.log('Order ID:', orderId);
-      
+
       const paymentTrans = {
         order_id: orderId,
         pg_type: 0
@@ -252,7 +252,7 @@ export default function UserDashboard() {
 
       const paymentData = await makePayment(paymentTrans);
       console.log('Payment Data:', paymentData);
-      
+
       if (!paymentData.payment_url) {
         throw new Error(paymentData.message || 'Failed to initiate payment');
       }
@@ -264,11 +264,11 @@ export default function UserDashboard() {
       // Set up 5-minute auto-cancel timeout
       const timeoutId = setTimeout(() => {
         console.log('Payment timeout - auto-cancelling after 5 minutes');
-        
+
         // Close the PhonePe iframe if it exists
         try {
           if (window.PhonePeCheckout && window.PhonePeCheckout.close) {
-            window.PhonePeCheckout.close();
+            window.PhonePeCheckout?.destroy?.();
           }
         } catch (e) {
           console.error('Error closing PhonePe iframe:', e);
@@ -278,6 +278,7 @@ export default function UserDashboard() {
         setError('Payment session expired. Please try booking again.');
         setIsBookingModalOpen(true);
         setLoading(false);
+        setShowTicketGenerating(false);
         setCurrentTransactionId(null);
       }, 5 * 60 * 1000); // 5 minutes in milliseconds
 
@@ -300,29 +301,35 @@ export default function UserDashboard() {
             setError('Payment cancelled by user. Please try again.');
             setIsBookingModalOpen(true);
             setLoading(false);
+            setShowTicketGenerating(false);
             setCurrentTransactionId(null);
           } else if (response === 'CONCLUDED') {
-            // Transaction concluded - check status
-            console.log('Payment concluded, checking status...');
+          
+            // Show ticket generating state
+            setShowTicketGenerating(true);
+
             checkPaymentStatus(orderId).catch(err => {
               console.error('Error in checkPaymentStatus:', err);
               setError('Failed to verify payment. Please check My Tickets section.');
               setLoading(false);
+              setShowTicketGenerating(false);
             });
           } else {
             console.log('Unexpected callback response:', response);
             setLoading(false);
+            setShowTicketGenerating(false);
           }
         } catch (error) {
           console.error('Error in PhonePe callback:', error);
           setError('An error occurred. Please check My Tickets section.');
           setLoading(false);
+          setShowTicketGenerating(false);
         }
       };
 
       // Open PhonePe PayPage in IFRAME mode
       console.log('Initiating PhonePe transaction with URL:', paymentData.payment_url);
-      
+
       try {
         window.PhonePeCheckout.transact({
           tokenUrl: paymentData.payment_url,
@@ -344,68 +351,77 @@ export default function UserDashboard() {
       console.error('Payment initiation error:', err);
       setError(err.message || 'Failed to initiate payment. Please try again.');
       setLoading(false);
+      setShowTicketGenerating(false);
     }
   };
 
   const checkPaymentStatus = async (orderId) => {
-  try {
-    setLoading(true);
+    try {
+      // Keep showTicketGenerating true (already set in callback)
 
-    // getPaymentStatus already returns the JSON object
-    const data = await getPaymentStatus(orderId);
+      // getPaymentStatus already returns the JSON object
+      const data = await getPaymentStatus(orderId);
 
-    console.log("Payment status response:", data);
+      console.log("Payment status response:", data);
 
-    if (data.status === 'COMPLETED') {
-      // Payment successful - refresh tickets
-      const updatedTickets = await getMyOrders();
-      setUserTickets(updatedTickets || []);
+      if (data.status === 'COMPLETED') {
+        // Payment successful - refresh tickets
+        const updatedTickets = await getMyOrders();
+        setUserTickets(updatedTickets || []);
 
-      // Fetch the order details for the completed order
-      try {
-        const orderDetails = await getOrderDetails(orderId);
-        
-        // Reset booking state
-        setTickets({ adult: 0, child: 0 });
-        setBookingDate('');
-        setBookingStep(1);
-        setCurrentTransactionId(null);
+        // Fetch the order details for the completed order
+        try {
+          const orderDetails = await getOrderDetails(orderId);
 
-        // Open the order modal with the newly booked ticket
-        setSelectedOrder(orderDetails);
-        setIsOrderModalOpen(true);
-        setLoadingOrderDetails(false);
-        
-        // Optional: Show a brief success message
-        // alert('Payment successful! Your tickets have been booked.');
-      } catch (detailsErr) {
-        console.error('Failed to fetch order details:', detailsErr);
-        // Still reset state and show generic success
-        setTickets({ adult: 0, child: 0 });
-        setBookingDate('');
-        setBookingStep(1);
-        setCurrentTransactionId(null);
-        // alert('Payment successful! Your tickets have been booked.');
+          // Reset booking state
+          setTickets({ adult: 0, child: 0 });
+          setBookingDate('');
+          setBookingStep(1);
+          setCurrentTransactionId(null);
+
+          // Clear loading states
+          setLoading(false);
+          setShowTicketGenerating(false);
+
+          // Open the order modal with the newly booked ticket
+          setSelectedOrder(orderDetails);
+          setIsOrderModalOpen(true);
+          setLoadingOrderDetails(false);
+
+        } catch (detailsErr) {
+          console.error('Failed to fetch order details:', detailsErr);
+          // Still reset state
+          setTickets({ adult: 0, child: 0 });
+          setBookingDate('');
+          setBookingStep(1);
+          setCurrentTransactionId(null);
+          setLoading(false);
+          setShowTicketGenerating(false);
+          setError('Tickets booked successfully! Please check My Tickets section.');
+        }
       }
-    } 
-    else if (
-      data.status === 'FAILED' ||
-      data.status === 'PAYMENT_ERROR' ||
-      data.status === 'PAYMENT_DECLINED'
-    ) {
-      setError('Payment failed. Please try again.');
-    } 
-    else {
-      setError('Payment status: ' + (data.status || 'PENDING'));
-    }
+      else if (
+        data.status === 'FAILED' ||
+        data.status === 'PAYMENT_ERROR' ||
+        data.status === 'PAYMENT_DECLINED'
+      ) {
+        setLoading(false);
+        setShowTicketGenerating(false);
+        setError('Payment failed. Please try again.');
+      }
+      else {
+        setLoading(false);
+        setShowTicketGenerating(false);
+        setError('Payment status: ' + (data.status || 'PENDING'));
+      }
 
-  } catch (err) {
-    console.error('Status check error:', err);
-    setError('Failed to verify payment status. Please contact support.');
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      console.error('Status check error:', err);
+      setLoading(false);
+      setShowTicketGenerating(false);
+      setError('Failed to verify payment status. Please contact support.');
+    }
+  };
 
 
   const handleConfirmBooking = () => {
@@ -874,8 +890,8 @@ export default function UserDashboard() {
                     }}
                     disabled={isDownloading}
                     className={`p-2 rounded-full transition-all ${isDownloading
-                        ? 'bg-gray-100 cursor-not-allowed'
-                        : 'hover:bg-gray-100 hover:scale-110'
+                      ? 'bg-gray-100 cursor-not-allowed'
+                      : 'hover:bg-gray-100 hover:scale-110'
                       }`}
                     aria-label="Download ticket"
                   >
@@ -1013,6 +1029,15 @@ export default function UserDashboard() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        )}
+        {showTicketGenerating && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 text-center shadow-xl">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-500 mx-auto mb-4"></div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Payment Successful!</h3>
+              <p className="text-gray-600">Generating your ticket...</p>
             </div>
           </div>
         )}

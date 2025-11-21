@@ -440,16 +440,45 @@ export const getOrderByQR = async (qrData) => {
     return res;
 };
 export const updateOrderCheckIn = async (order) => {
-  for (const ticket of order.tickets) {
-    if (ticket.checkedIn) {
-      ticket.status = "in";
+  try {
+    for (const ticket of order.tickets) {
+      if (ticket.checkedIn) {
+        ticket.status = "in";
+      }
     }
+    const response = await fetch(`${API_BASE_URL}/tc/update-tickets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(order),
+    });
+    console.log('API',response.ok)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Check if response has content before parsing
+    const contentType = response.headers.get("content-type");
+    const text = await response.text();
+    
+    // If response is empty or whitespace, return success indicator
+    if (!text || text.trim() === '') {
+      console.log('API response: empty (success)');
+      return { success: true };
+    }
+    
+    // If there's content, try to parse it
+    try {
+      const data = JSON.parse(text);
+      console.log('API response:', data);
+      return data;
+    } catch (e) {
+      // If JSON parsing fails but status was OK, still consider it success
+      console.log('API response: non-JSON success');
+      return { success: true };
+    }
+  } catch (error) {
+    console.error('Update check-in error:', error);
+    throw error;
   }
-  const response = await fetch(`${API_BASE_URL}/tc/update-tickets`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(order),
-  });
-  return handleResponse(response);
 }
