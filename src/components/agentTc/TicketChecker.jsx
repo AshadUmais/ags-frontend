@@ -15,6 +15,8 @@ export default function TicketChecker() {
   const [manualCode, setManualCode] = useState("");
   let zoomLevel = 1.0;
   let zoomInterval = null;
+  const [invalidDateModal, setInvalidDateModal] = useState(false);
+  const [invalidDateText, setInvalidDateText] = useState("");
 
   // Modal when all tickets are already checked in
   const [alreadyCheckedModal, setAlreadyCheckedModal] = useState(false);
@@ -43,6 +45,13 @@ export default function TicketChecker() {
     const date = new Date(`${year}-${month}-${day}`);
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
+  };
+  const getTodayInt = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return Number(`${y}${m}${d}`);
   };
 
   // Play success sound + vibration
@@ -194,6 +203,25 @@ export default function TicketChecker() {
     try {
       const res = await getOrderByQR(code);
       const orderData = res.order || res;
+      const bookingDateInt = Number(orderData.tickets?.[0]?.booking_date);
+      const todayInt = getTodayInt();
+
+      // ❌ Past or future date detected
+      if (bookingDateInt !== todayInt) {
+        setInvalidDateText(
+          `This ticket is for ${formatDateFromInt(bookingDateInt)}. Only today's tickets are allowed.`
+        );
+
+        setInvalidDateModal(true);
+
+        // Reset state
+        setOrder(null);
+        setLoading(false);
+        setScannedCode("");
+
+        // Restart scanner after modal closes manually
+        return;
+      }
 
       const allIn = orderData.tickets.every((t) => t.status === "in");
       const someIn = orderData.tickets.some((t) => t.status === "in");
@@ -740,7 +768,31 @@ export default function TicketChecker() {
             </div>
           )}
         </div>
+{invalidDateModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white p-6 rounded-2xl text-center shadow-xl max-w-sm w-full animate-scale-in">
+      
+      <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8v4m0 4h.01M12 4a8 8 0 100 16 8 8 0 000-16z" />
+        </svg>
+      </div>
 
+      <h2 className="text-yellow-700 text-lg font-semibold">Invalid Ticket Date</h2>
+      <p className="text-gray-700 mt-2">{invalidDateText}</p>
+
+      <button
+        onClick={() => {
+          setInvalidDateModal(false);
+          setTimeout(() => startScanner(), 300);
+        }}
+        className="mt-4 bg-purple-600 text-white px-6 py-2 rounded-xl hover:bg-purple-700 transition-colors"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
         <style>{`
           @keyframes sheenEffect {
             0% { background-position: 0% 50%; }
