@@ -39,12 +39,14 @@ const getAuthHeaders = () => ({
 
 // Ticket related APIs
 export const getTicketCount = async (date) => {
-  const response = await fetch(`${API_BASE_URL}/tickets/count?date=${date}`, {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-  });
+  // const response = await fetch(`${API_BASE_URL}/tickets/count?date=${date}`, {
+  //   headers: { 'Content-Type': 'application/json' },
+  //   credentials: 'include',
+  // });
+  const response = {"adult_tickets":100,"child_tickets":100,"date":"20260131"};
   console.log(response);
-  return handleResponse(response);
+  // return handleResponse(response);
+  return response;
 };
 
 export const createTickets = async (ticketData, date) => {
@@ -368,11 +370,13 @@ export const getMyWallet = async () => {
 
 // Ticket pricing (by date)
 export const getTicketPricing = async (date) => {
-  const response = await fetch(`${API_BASE_URL}/tickets/price?date=${date}`, {
-    credentials: 'include',
-  });
+  // const response = await fetch(`${API_BASE_URL}/tickets/price?date=${date}`, {
+  //   credentials: 'include',
+  // });
+  const response = {"adult_ticket_price":1499,"child_ticket_price":999,"date":"20260131"};
   console.log(response);
-  return handleResponse(response);
+  // return handleResponse(response);
+  return response;
 };
 
 export const loadWallet = async (userId, amount) => {

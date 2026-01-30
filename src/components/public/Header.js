@@ -80,7 +80,8 @@ const Header = () => {
       }
     } else {
       // User is not logged in, dispatch event to open login modal
-      window.dispatchEvent(new Event('openLoginModal'));
+      // window.dispatchEvent(new Event('openLoginModal'));
+      navigate('/bookings'); // Redirect to bookings which will prompt login
     }
     closeMenu();
   };

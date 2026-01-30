@@ -1,74 +1,88 @@
 import React from 'react';
 import './PlayPage.css';
+import { id } from 'date-fns/locale';
 
 const PlayPage = () => {
   const landRides = [
     {
       id: 1,
-      name: "Thunder Mountain",
-      description: "Experience the ultimate thrill on this high-speed roller coaster that takes you through twists, turns, and breathtaking drops.",
-      image: "/assets/thunder-mountain.jpg",
-      duration: "3 minutes",
-      minHeight: "120cm"
+      name: "Car Dasher",
+      description: "Buckle up for a speedy spin! Car Dasher lets riders steer through twists and turns, making it a perfect blend of fun and friendly competition for all ages.",
+      image: "/assets/D.R.-CAR-DASHER.jpg"
     },
     {
       id: 2,
-      name: "Adventure Express",
-      description: "A family-friendly ride through enchanted forests and mysterious caves. Perfect for adventurers of all ages.",
-      image: "/assets/roller-coaster.jpg",
-      duration: "5 minutes",
-      minHeight: "100cm"
+      name: "Storm Runner",
+      description: "Hold on tight as Storm Runner launches you into a whirlwind of motion. Fast turns, sudden drops, and heart-pounding speed make this a must-try thrill ride.",
+      image: "/assets/D.R.-STORM-RUNNER.jpg"
     },
     {
       id: 3,
-      name: "Sky Tower",
-      description: "Rise 200 feet above the park for spectacular panoramic views. A gentle ride with unforgettable scenery.",
-      image: "/assets/flying-ride.jpg",
-      duration: "4 minutes",
-      minHeight: "110cm"
+      name: "Sky Swing",
+      description: "Soar high and feel the breeze! Sky Swing lifts you up and swings you through the air, offering breathtaking views and a flying sensation you won’t forget.",
+      image: "/assets/D.R.-SKY-SWING.jpg"
     },
     {
       id: 4,
-      name: "Bird Safari",
-      description: "Journey through an authentic safari experience with exotic animals and stunning landscapes.",
-      image: "/assets/bird-show.jpg",
-      duration: "15 minutes",
-      minHeight: "No restriction"
+      name: "Gravity Strike",
+      description: "Defy gravity on this adrenaline-packed ride. Gravity Strike pulls you up and drops you down in powerful motions, delivering pure thrill from start to finish.",
+      image: "/assets/D.R.-GRAVITY-STRIKE.jpg",
+    },{
+      id: 5,
+      name:"Carousel",
+      description:"A timeless classic for all generations. Enjoy a gentle ride on beautifully crafted animals as the carousel spins to cheerful music—perfect for families and kids.",
+      image:"/assets/D.R.-CAROUSEL.jpg"
+    },
+    {
+      id: 6,
+      name:"Elephant Roller",
+      description:"Climb aboard the friendly elephants for a joyful ride! Elephant Roller takes kids on a smooth, bouncy journey that’s full of smiles and laughter.",
+      image:"/assets/D.R.-ELEPHANT-ROLLER.jpg"
+    },
+    {
+      id: 7,
+      name:"Sun & Moon",
+      description:"A magical ride that takes you around the sky. Sun and Moon offers a calm, floating experience, making it ideal for younger riders and those who enjoy relaxed fun.",
+      image:"/assets/D.R.-SUN-N-MOON.jpg"
     }
   ];
 
   const waterRides = [
     {
-      id: 5,
-      name: "Splash Canyon",
-      description: "Navigate through rushing rapids and cascading waterfalls in this exciting water adventure.",
-      image: "/assets/splash-canyon.webp",
-      duration: "8 minutes",
-      minHeight: "120cm"
-    },
-    {
-      id: 6,
-      name: "Aqua Loop",
-      description: "Experience the ultimate water slide with loops, drops, and high-speed water jets.",
-      image: "/assets/aqua-loop.jpg",
-      duration: "2 minutes",
-      minHeight: "140cm"
-    },
-    {
-      id: 7,
-      name: "Lazy River",
-      description: "Relax and unwind as you float along our peaceful lazy river surrounded by tropical landscapes.",
-      image: "/assets/lazy-river.webp",
-      duration: "20 minutes",
-      minHeight: "No restriction"
-    },
-    {
       id: 8,
-      name: "Wave Pool",
-      description: "Enjoy the fun of ocean waves in our massive wave pool. Perfect for swimming and surfing.",
-      image: "/assets/wave-pool.webp",
-      duration: "Continuous",
-      minHeight: "No restriction"
+      name: "Slides",
+      description: "Get ready for an exciting splash! These water slides send you racing down smooth curves and speedy drops, ending with a refreshing splash that keeps the fun flowing.",
+      image: "/assets/W.R-SLIDES.jpg"
+    },
+    {
+      id: 9,
+      name: "Tots",
+      description: "Designed specially for little ones, Tots offers a safe and playful water experience with gentle sprays, shallow pools, and lots of giggles all around.",
+      image: "/assets/W.R.-TOTS.jpg"
+    },
+    {
+      id: 10,
+      name: "Hump n Float",
+      description: "Ride the waves as you glide over humps and float through flowing water. Hump and Float is a relaxing yet fun ride that’s perfect for cooling off and unwinding.",
+      image: "/assets/W.R-HUMP-AND-FLOAT.jpg"
+    },
+    {
+      id: 11,
+      name: "Rainbow Tots",
+      description: "A colorful water paradise for kids! Rainbow Tots features bright slides, playful water jets, and soft splashes, making it a joyful and safe adventure for young riders.",
+      image: "/assets/W.R-RAINBOW-TOTS.jpeg"
+    },
+    {
+      id: 12,
+      name:"Watefall Rides",
+      description:"Step under cascading water and feel the rush! Water Falls delivers a refreshing experience as streams of water pour down, creating the perfect cool-off zone.",
+      image:"/assets/W.R-WATER-FALLS.jpg"
+    },
+    {
+      id: 13,
+      name:"Wet Play Zone",
+      description:"Experience non-stop water fun at WPS! With exciting sprays, splashes, and interactive water features, this zone keeps the excitement high for all age groups.",
+      image:"/assets/W.R-WPS.jpg"
     }
   ];
 
@@ -80,10 +94,6 @@ const PlayPage = () => {
       <div className="zride-content">
         <h3 className="zride-name">{ride.name}</h3>
         <p className="zride-description">{ride.description}</p>
-        <div className="zride-details">
-          <span className="zride-duration">⏱️ {ride.duration}</span>
-          <span className="zride-height">📏 {ride.minHeight}</span>
-        </div>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getTicketCount, createTickets, getTicketPricing, makePayment, getPaymentStatus, getMyOrders, getOrderDetails } from '../../api';
 import Header from '../public/Header';
 import html2canvas from 'html2canvas';
+import { set } from 'date-fns';
 
 // Helper Functions
 const formatDate = (dateStr) => {
@@ -32,6 +34,7 @@ const getMaxDate = () => {
 const MAX_TICKETS_PER_BOOKING = 20;
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
   const [bookingDate, setBookingDate] = useState('');
   const [tickets, setTickets] = useState({ adult: 0, child: 0 });
   const [ticketAvailability, setTicketAvailability] = useState({ adult: 0, child: 0 });
@@ -81,6 +84,9 @@ export default function UserDashboard() {
 
   useEffect(() => {
     const fetchUserTickets = async () => {
+      const authToken = sessionStorage.getItem("authToken");
+      if (!authToken) return; // Skip if not logged in
+
       try {
         setLoadingTickets(true);
         const response = await getMyOrders();
@@ -92,6 +98,19 @@ export default function UserDashboard() {
       }
     };
     fetchUserTickets();
+  }, []);
+
+  // Auto-open booking modal for anonymous users
+  useEffect(() => {
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken && !isBookingModalOpen) {
+      setIsBookingModalOpen(true);
+      setBookingStep(1);
+      setTickets({ adult: 0, child: 0 });
+      setBookingDate('');
+      setError('');
+      setOtpVerified(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -122,7 +141,7 @@ export default function UserDashboard() {
         });
       } catch (err) {
         const errorMessage = err.message || 'Failed to check ticket availability';
-        setError(`${errorMessage}. Please check console for details.`);
+        setError(`${errorMessage}`);
         setTicketAvailability({ adult: 0, child: 0 });
         console.error('Failed to fetch availability:', err);
       } finally {
@@ -170,6 +189,9 @@ export default function UserDashboard() {
     if (bookingStep === 2) {
       const totalTickets = getTotalTickets();
       return totalTickets > 0 && totalTickets <= MAX_TICKETS_PER_BOOKING;
+    }
+    if (bookingStep === 3) {
+      return otpVerified;
     }
     return true;
   };
@@ -365,9 +387,12 @@ export default function UserDashboard() {
       console.log("Payment status response:", data);
 
       if (data.status === 'COMPLETED') {
-        // Payment successful - refresh tickets
-        const updatedTickets = await getMyOrders();
-        setUserTickets(updatedTickets || []);
+        // Payment successful - refresh tickets if logged in
+        const authToken = sessionStorage.getItem("authToken");
+        if (authToken) {
+          const updatedTickets = await getMyOrders();
+          setUserTickets(updatedTickets || []);
+        }
 
         // Fetch the order details for the completed order
         try {
@@ -495,6 +520,121 @@ export default function UserDashboard() {
   const minDate = getTodayDate();
   const maxDate = getMaxDate();
 
+  const [role, setRole] = useState("User");
+  
+    // User (mobile + OTP)
+    const [mobile, setMobile] = useState("");
+    const [otpSent, setOtpSent] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [otpTimer, setOtpTimer] = useState(0);
+    const [otpVerified, setOtpVerified] = useState(false);
+    const getBaseUrl = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:8080/api';
+    }
+    return `https://${window.location.hostname}/api`;
+  };
+  useEffect(() => {
+    let timer;
+    if (otpTimer > 0) {
+      timer = setTimeout(() => setOtpTimer(otpTimer - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [otpTimer]);
+  const API = {
+    SEND_OTP: `${getBaseUrl()}/send-otp`,
+    LOGIN_OTP: `${getBaseUrl()}/login-otp`,
+    LOGIN: `${getBaseUrl()}/login`,
+  };
+
+  async function handleSendOtp(e) {
+    e && e.preventDefault();
+    setError("");
+    setLoading(true);
+    setOtpSent(false);
+
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      setError("Enter a valid mobile number");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // const res = await fetch(API.SEND_OTP, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     "Accept": "application/json"
+      //   },
+      //   body: JSON.stringify({ username: mobile })
+      // });
+
+      // const contentType = res.headers.get("content-type");
+      // const data = contentType && contentType.indexOf("application/json") !== -1
+      //   ? await res.json()
+      //   : { message: await res.text() };
+
+      // if (!res.ok) {
+      //   throw new Error(data.error || data.message || "Failed to send OTP");
+      // }
+
+      setOtpSent(true);
+      setOtpTimer(60);
+      setError("OTP sent successfully! Please check your phone.");
+    } catch (err) {
+      setError(err.message || "Network error. Please check if the backend server is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerifyOtp(e) {
+    e && e.preventDefault();
+    setError("");
+
+    if (!/^[0-9]{6}$/.test(otp)) {
+      setError("Enter the 6-digit OTP you received.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // const res = await fetch(API.LOGIN_OTP, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     "Accept": "application/json"
+      //   },
+      //   credentials: 'include',
+      //   body: JSON.stringify({ username: mobile, otp })
+      // });
+
+      // const data = await res.json();
+
+      // if (!res.ok) {
+      //   throw new Error(data.error || data.message || "OTP verification failed");
+      // }
+      const data = { user_id: "9042881080", token: "dummy-auth-token" }; // Dummy data for testing
+      const finalRole = "User";
+
+      sessionStorage.setItem("authRole", finalRole);
+      sessionStorage.setItem("userId", data.user_id);
+      sessionStorage.setItem("isAuthenticated", "true");
+      sessionStorage.setItem("authToken", data.token || "");
+      setOtpVerified(true);
+
+      // Dispatch auth change event
+      window.dispatchEvent(new Event('authChange'));
+    } catch (err) {
+      setError(err.message || "Network error");
+    } finally {
+      setLoading(false);
+    }
+  }
+    function handleResendOtp() {
+    if (otpTimer > 0) return;
+    handleSendOtp();
+  }
   return (
     <>
       <Header />
@@ -525,53 +665,54 @@ export default function UserDashboard() {
               </button>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-center text-primary">My Tickets</h2>
-            <p className="text-sm text-center text-secondary mb-6">Your booked tickets</p>
-            {loadingTickets ? (
-              <div className="text-center py-8 text-secondary">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-2"></div>
-                <p>Loading your orders...</p>
-              </div>
-            ) : userTickets.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-secondary mb-4">You don't have any orders yet</p>
-                <button
-                  onClick={() => {
-                    setIsBookingModalOpen(true);
-                    setBookingStep(1);
-                    setTickets({ adult: 0, child: 0 });
-                    setBookingDate('');
-                    setError('');
-                  }}
-                  className="px-6 py-3 bg-accent text-primary rounded-xl shadow-lg hover:brightness-95"
-                >
-                  Book Your First Ticket
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {userTickets.map((order) => {
-                  const { adultCount, childCount } = getOrderTicketCounts(order?.tickets ?? []);
-                  const bookingDate = order.tickets?.[0]?.booking_date;
+          {sessionStorage.getItem("authToken") && (
+            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-center text-primary">My Tickets</h2>
+              <p className="text-sm text-center text-secondary mb-6">Your booked tickets</p>
+              {loadingTickets ? (
+                <div className="text-center py-8 text-secondary">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-2"></div>
+                  <p>Loading your orders...</p>
+                </div>
+              ) : userTickets.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-secondary mb-4">You don't have any orders yet</p>
+                  <button
+                    onClick={() => {
+                      setIsBookingModalOpen(true);
+                      setBookingStep(1);
+                      setTickets({ adult: 0, child: 0 });
+                      setBookingDate('');
+                      setError('');
+                    }}
+                    className="px-6 py-3 bg-accent text-primary rounded-xl shadow-lg hover:brightness-95"
+                  >
+                    Book Your First Ticket
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userTickets.map((order) => {
+                    const { adultCount, childCount } = getOrderTicketCounts(order?.tickets ?? []);
+                    const bookingDate = order.tickets?.[0]?.booking_date;
 
-                  return (
-                    <div
-                      key={order.ID}
-                      onClick={() => handleOrderClick(order)}
-                      className="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h2 className="font-semibold text-primary text-lg">Booking Id #{order.ID}</h2>
-                          <p className="text-sm text-secondary">
-                            {bookingDate ? formatDateFromInt(bookingDate) : 'Date N/A'}
-                          </p>
+                    return (
+                      <div
+                        key={order.ID}
+                        onClick={() => handleOrderClick(order)}
+                        className="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-xl border border-purple-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h2 className="font-semibold text-primary text-lg">Booking Id #{order.ID}</h2>
+                            <p className="text-sm text-secondary">
+                              {bookingDate ? formatDateFromInt(bookingDate) : 'Date N/A'}
+                            </p>
+                          </div>
+                          <div className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(order.order_status)}`}>
+                            {order.order_status || 'N/A'}
+                          </div>
                         </div>
-                        <div className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(order.order_status)}`}>
-                          {order.order_status || 'N/A'}
-                        </div>
-                      </div>
 
                       <div className="space-y-2 mb-3">
                         {adultCount > 0 && (
@@ -602,6 +743,7 @@ export default function UserDashboard() {
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* Booking Modal */}
@@ -617,6 +759,12 @@ export default function UserDashboard() {
                     setTickets({ adult: 0, child: 0 });
                     setBookingDate('');
                     setError('');
+                    
+                    // If user is not logged in, redirect to home
+                    const authToken = sessionStorage.getItem("authToken");
+                    if (!authToken) {
+                      navigate('/');
+                    }
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -704,6 +852,7 @@ export default function UserDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Adult Tickets (₹{ticketPrices.adult.price})
                       </label>
+                      <p className="text-xs text-secondary mb-2">Height: 145cm and above</p>
                       <div className="flex items-center space-x-4">
                         <button
                           type="button"
@@ -725,7 +874,8 @@ export default function UserDashboard() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Child Tickets (₹{ticketPrices.child.price})
                       </label>
-                      <div className="flex items-center space-x-4">
+                      <p className="text-xs text-secondary mb-2">Height: 80cm - 145cm</p>
+                      <div className="flex items-center space-x-4"> 
                         <button
                           type="button"
                           onClick={() => handleQuantityChange('child', 'subtract')}
@@ -741,6 +891,9 @@ export default function UserDashboard() {
                         >+</button>
                       </div>
                     </div>
+                    <div>
+                      <p className="text-xs text-secondary mb-2">*Free entry for kids below 80cm</p>
+                      </div>
                     <div className="bg-blue-50 rounded-lg p-3 mb-4">
                       <p className="text-sm text-blue-900">
                         <span className="font-medium">Max {MAX_TICKETS_PER_BOOKING} tickets per booking</span>
@@ -776,7 +929,82 @@ export default function UserDashboard() {
                         </div>
                       </div>
                     </div>
+                  <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (otpSent) {
+              await handleVerifyOtp(e);
+            } else {
+              await handleSendOtp(e);
+            }
+          }}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary">Mobile number</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={mobile}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                    setMobile(value);
+                    if (otpSent) {
+                      setOtpSent(false);
+                      setOtp("");
+                    }
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. 9876543210"
+                  disabled={loading}
+                  maxLength={10}
+                />
+                {otpVerified && <p className="text-xs text-secondary mt-1 block" color='green'>✔️Verified</p>}
+              </div>
+
+              {otpSent && !otpVerified && (
+                <div>
+                  <label className="block text-sm font-medium text-secondary">Enter OTP</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={otp}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                      setOtp(value);
+                    }}
+                    className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
+                    disabled={loading}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-2">
+              <button
+                type="submit"
+                disabled={loading || (otpSent && otp.length !== 6) || (!otpSent && mobile.length !== 10)}
+                className="flex-1 px-4 py-2 bg-accent text-primary rounded-xl shadow hover:brightness-95 disabled:opacity-50"
+                hidden={otpVerified}
+              >
+                {loading ? "Please wait..." : otpSent ? "Verify OTP" : "Send OTP"}
+              </button>
+
+              {otpSent && (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={otpTimer > 0 || loading}
+                  className="px-3 py-2 text-sm rounded-md border text-secondary disabled:opacity-50"
+                  hidden={otpVerified}
+                >
+                  {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend"}
+                </button>
+              )}
+            </div>
+          </form>
                   </div>
+                  
                 )}
               </div>
 
@@ -801,7 +1029,8 @@ export default function UserDashboard() {
                         handleNextStep();
                       }
                     }}
-                    disabled={!canProceedToNextStep()}
+                    
+                    disabled={!canProceedToNextStep()&&!otpVerified}
                     className={`px-6 py-2 rounded-lg ml-auto transition ${canProceedToNextStep()
                       ? 'bg-accent text-primary hover:brightness-95'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -819,7 +1048,7 @@ export default function UserDashboard() {
             </div>
           </div>
         )}
-
+      
         {/* Order Details Modal */}
         {isOrderModalOpen && selectedOrder && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-28 pb-4 z-40">
@@ -994,9 +1223,9 @@ export default function UserDashboard() {
                           <div className="flex justify-between items-center">
                             <span className="text-secondary text-xs">Status</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusColor(selectedOrder.order.order_status)}`}>
-                              {selectedOrder.order.order_status &&
+                              {(selectedOrder.order.order_status &&
                                 selectedOrder.order.order_status.charAt(0).toUpperCase() +
-                                selectedOrder.order.order_status.slice(1).toLowerCase() || 'N/A'}
+                                selectedOrder.order.order_status.slice(1).toLowerCase()) || 'N/A'}
                             </span>
                           </div>
                         </div>

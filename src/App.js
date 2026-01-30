@@ -92,11 +92,7 @@ function App() {
         />
         <Route 
           path="/bookings" 
-          element={
-            <ProtectedRoute allowedRoles={["User", "SilverUser", "GoldUser", "PlatinumUser"]}>
-              <UserDashboard />
-            </ProtectedRoute>
-          } 
+          element={<UserDashboard />}
         />
         <Route 
           path="/agent/dashboard" 

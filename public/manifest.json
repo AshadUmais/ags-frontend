@@ -1,0 +1,39 @@
+{
+  "short_name": "AGS",
+  "name": "AGS WonderWorld",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/assets/ags-logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/ags-logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/ags-logo.avif",
+      "type": "image/avif",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/ags-logo.avif",
+      "type": "image/avif",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

@@ -1,0 +1,61 @@
+.squad-section {
+  padding: 60px 20px;
+  background: #f8f9fb;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 40px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.squad-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.squad-card h3 {
+  margin-bottom: 8px;
+}
+
+.squad-card p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn.primary {
+  background: #ffcc00;
+  color: #000;
+}
+
+.btn.secondary {
+  border: 1px solid #ddd;
+  color: #333;
+}

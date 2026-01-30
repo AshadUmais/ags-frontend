@@ -1,0 +1,155 @@
+.ad-banner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75vw;
+  height: 75vh;
+  padding: 0;
+  z-index: 1500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.4s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.ad-banner-content {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.ad-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ad-banner-text {
+  color: white;
+  text-align: center;
+  min-width: 300px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ad-banner-text h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.ad-banner-text p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.ad-banner-text strong {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.ad-banner-close {
+  background: transparent;
+  border: none;
+  color: purple;
+  font-size: 1.75rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  position: absolute;
+  right: 0%;
+  top: 0%;
+  flex-shrink: 0;
+}
+
+.ad-banner-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.ad-banner-close:active {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .ad-banner {
+    padding: 1.5rem;
+    min-height: 100px;
+  }
+
+  .ad-banner-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ad-banner-text h3 {
+    font-size: 1.1rem;
+  }
+
+  .ad-banner-text p {
+    font-size: 0.9rem;
+  }
+
+  .ad-banner-close {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .ad-banner {
+    padding: 1rem;
+    min-height: 90px;
+  }
+
+  .ad-banner-content {
+    gap: 0.5rem;
+  }
+
+  .ad-banner-text h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .ad-banner-text p {
+    font-size: 0.8rem;
+  }
+
+  .ad-banner-close {
+    width: 32px;
+    height: 32px;
+    font-size: 1.5rem;
+  }
+}

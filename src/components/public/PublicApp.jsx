@@ -1,20 +1,25 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import AdBanner from './AdBanner';
 import Header from './Header';
 import Hero from './Hero';
 import RidesSection from './RidesSection';
+import AmenitiesSection from './AmenitiesSection';
 import UpdatesSection from './UpdatesSection';
 import Footer from './Footer';
 import EatPage from './EatPage';
 import ContactPage from './ContactPage';
 import PlayPage from './PlayPage';
 import './WonderWorldApp.css';
+import SquadSection from './Squad';
 
 // Home Page Component for the public site
 const HomePage = () => (
   <>
     <Hero />
     <RidesSection />
+    <AmenitiesSection />
+    <SquadSection />
     <UpdatesSection />
   </>
 );
@@ -22,6 +27,7 @@ const HomePage = () => (
 function PublicApp() {
   return (
     <div className="App">
+      <AdBanner />
       <Header />
       <Routes>
         <Route path="/" element={<HomePage />} />
